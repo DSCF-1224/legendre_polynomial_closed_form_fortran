@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            variant: default
+            fypp_args: ""
+          - runner: ubuntu-latest
+            variant: with_real128
+            fypp_args: "-DWITH_REAL128"
+          - runner: ubuntu-24.04-arm
+            variant: default
+            fypp_args: ""
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install fpm (x86_64)
+        if: matrix.runner != 'ubuntu-24.04-arm'
+        uses: fortran-lang/setup-fpm@v10
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache fpm binary (arm64)
+        if: matrix.runner == 'ubuntu-24.04-arm'
+        id: cache-fpm
+        uses: actions/cache@v6
+        with:
+          path: ~/.local/bin/fpm
+          key: fpm-v0.13.0-${{ matrix.runner }}
+
+      - name: Install fpm (arm64, build from source)
+        if: matrix.runner == 'ubuntu-24.04-arm' && steps.cache-fpm.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch v0.13.0 https://github.com/fortran-lang/fpm /tmp/fpm-src
+          cd /tmp/fpm-src
+          ./install.sh
+
+      - name: Add fpm to PATH (arm64)
+        if: matrix.runner == 'ubuntu-24.04-arm'
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install fypp
+        run: pip install fypp
+
+      - name: Generate source (${{ matrix.variant }})
+        run: |
+          fypp ${{ matrix.fypp_args }} \
+               src/legendre_polynomial_closed_form_fortran.fypp \
+               src/legendre_polynomial_closed_form_fortran.f90
+
+      - name: Build
+        run: fpm build --profile debug

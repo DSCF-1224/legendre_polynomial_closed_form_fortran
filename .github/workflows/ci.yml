@@ -61,7 +61,7 @@ jobs:
 
       - name: Generate source (${{ matrix.variant }})
         run: |
-          fypp ${{ matrix.fypp_args }} \
+          fypp ${{ matrix.fypp_args }} -m math \
                src/legendre_polynomial_closed_form_fortran.fypp \
                src/legendre_polynomial_closed_form_fortran.f90
 

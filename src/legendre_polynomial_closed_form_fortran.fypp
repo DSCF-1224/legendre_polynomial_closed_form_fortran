@@ -45,13 +45,19 @@ numerator_deg${str(degree).zfill(2)}$_pow${str(degree - 2 * j).zfill(2)}$
 ${(-1)**j * math.comb(degree, j) * math.comb( ( 2 * (degree - j) ), degree )}$
 #:enddef NUMERATOR_VALUE
 
-#:def P_N(degree)
+#:def P_N_INTERFACE(degree)
 p_${str(degree).zfill(2)}$
-#:enddef P_N
+#:enddef P_N_INTERFACE
 
-#:def P_N_REAL(degree, real_kind)
-${P_N(degree)}$_real${str(real_kind)}$
-#:enddef P_N_REAL
+#:def P_N_FUNCTION(degree, real_kind)
+${P_N_INTERFACE(degree)}$_real${str(real_kind)}$
+#:enddef P_N_FUNCTION
+
+#:set P_N_SELECTABLE_INTERFACE = 'p_n'
+
+#:def P_N_SELECTABLE_FUNCTION(real_kind)
+${P_N_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
+#:enddef P_N_SELECTABLE_FUNCTION
 
 #:endmute
 module ${MODULE_NAME}$
@@ -62,6 +68,9 @@ module ${MODULE_NAME}$
   use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
   #:endfor
 
+  use, intrinsic :: ieee_arithmetic, only: ieee_signaling_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_value
+
 
 
   implicit none
@@ -71,8 +80,9 @@ module ${MODULE_NAME}$
   private
 
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
-  public :: ${P_N(DEGREE)}$
+  public :: ${P_N_INTERFACE(DEGREE)}$
   #:endfor
+  public :: ${P_N_SELECTABLE_INTERFACE}$
 
 
 
@@ -92,11 +102,11 @@ module ${MODULE_NAME}$
 
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
 
-  #:set INTERFACE_NAME = P_N(DEGREE)
+  #:set INTERFACE_NAME = P_N_INTERFACE(DEGREE)
   interface ${INTERFACE_NAME}$
     #:for REAL_KIND in REAL_KINDS
     #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
-    module procedure ${P_N_REAL(DEGREE, REAL_KIND)}$
+    module procedure ${P_N_FUNCTION(DEGREE, REAL_KIND)}$
     #:endif
     #:endfor
   end interface ${INTERFACE_NAME}$
@@ -105,13 +115,19 @@ module ${MODULE_NAME}$
   #:endfor
   #! DEGREE
 
+  interface ${P_N_SELECTABLE_INTERFACE}$
+    #:for REAL_KIND in REAL_KINDS
+    module procedure ${P_N_SELECTABLE_FUNCTION(REAL_KIND)}$
+    #:endfor
+  end interface ${P_N_SELECTABLE_INTERFACE}$
+
 
   contains
 
 
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = P_N_REAL(0, REAL_KIND)
+  #:set FUNCTION_NAME = P_N_FUNCTION(0, REAL_KIND)
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
 
     real(real${REAL_KIND}$), intent(in) :: x
@@ -127,7 +143,7 @@ module ${MODULE_NAME}$
 
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = P_N_REAL(1, REAL_KIND)
+  #:set FUNCTION_NAME = P_N_FUNCTION(1, REAL_KIND)
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
 
     real(real${REAL_KIND}$), intent(in) :: x
@@ -144,7 +160,7 @@ module ${MODULE_NAME}$
   #:set DEGREE = 2
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = P_N_REAL(DEGREE, REAL_KIND)
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
 
     real(real${REAL_KIND}$), intent(in) :: x
@@ -162,7 +178,7 @@ module ${MODULE_NAME}$
   #:set DEGREE = 3
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = P_N_REAL(DEGREE, REAL_KIND)
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
 
     real(real${REAL_KIND}$), intent(in) :: x
@@ -180,7 +196,7 @@ module ${MODULE_NAME}$
 
   #:for REAL_KIND in REAL_KINDS
   #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
-  #:set FUNCTION_NAME = P_N_REAL(DEGREE, REAL_KIND)
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
 
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
 
@@ -208,4 +224,32 @@ module ${MODULE_NAME}$
 
   #:endfor
   #! DEGREE
+
+  #:for REAL_KIND in REAL_KINDS
+  #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(REAL_KIND)
+
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
+
+    integer(int32), intent(in) :: degree
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+
+    select case (degree)
+
+      #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
+      #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
+      case ( ${str(DEGREE).rjust(2)}$_int32 ); ${FUNCTION_NAME}$ = ${P_N_INTERFACE(DEGREE)}$(x)
+      #:endif
+      #:endfor
+
+      case default; ${FUNCTION_NAME}$ = ieee_value(x, ieee_signaling_nan)
+
+    end select
+
+  end function ${FUNCTION_NAME}$
+
+  #:del FUNCTION_NAME
+  #:endfor
+  #! REAL_KIND
 end module ${MODULE_NAME}$

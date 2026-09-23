@@ -215,10 +215,8 @@ module ${MODULE_NAME}$
 
     select case (degree)
 
-      #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
-      #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
+      #:for DEGREE in range(0, MAXVAL_DEGREE_REAL(REAL_KIND) + 1)
       case ( ${str(DEGREE).rjust(2)}$_int32 ); ${FUNCTION_NAME}$ = ${P_N_INTERFACE(DEGREE)}$(x)
-      #:endif
       #:endfor
 
       case default; ${FUNCTION_NAME}$ = ieee_value(x, ieee_signaling_nan)

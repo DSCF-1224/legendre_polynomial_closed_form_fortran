@@ -64,6 +64,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m math \
                src/legendre_polynomial_closed_form_fortran.fypp \
                src/legendre_polynomial_closed_form_fortran.f90
+          for f in test/*.fypp; do
+            fypp ${{ matrix.fypp_args }} "$f" "${f%.fypp}.f90"
+          done
 
       - name: Build
         run: fpm build --profile debug

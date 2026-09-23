@@ -1,0 +1,67 @@
+#:include '../src/common.fypp'
+#:set TEST_MODULE_NAME = 'test_utilities'
+module ${TEST_MODULE_NAME}$
+
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, intrinsic :: ieee_arithmetic, only: operator(.eq.)
+  use, intrinsic :: ieee_arithmetic, only: ieee_class
+  use, intrinsic :: ieee_arithmetic, only: ieee_class_type
+  use, intrinsic :: ieee_arithmetic, only: ieee_negative_zero
+  use, intrinsic :: ieee_arithmetic, only: ieee_positive_zero
+
+
+
+  implicit none
+
+
+
+  private
+
+  public :: is_zero
+
+
+
+
+  #:set INTERFACE_NAME = 'is_zero'
+  interface ${INTERFACE_NAME}$
+  #:for REAL_KIND in REAL_KINDS
+    module procedure :: ${INTERFACE_NAME}$_real${REAL_KIND}$
+  #:endfor
+  end interface ${INTERFACE_NAME}$
+  #:del INTERFACE_NAME
+
+
+
+  contains
+
+
+
+  #:set FUNCTION_NAME = 'is_zero_class'
+  logical pure function ${FUNCTION_NAME}$(class)
+
+    type(ieee_class_type), intent(in) :: class
+
+    ${FUNCTION_NAME}$ = &!
+      (class .eq. ieee_positive_zero) .or. &!
+      (class .eq. ieee_negative_zero)
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = 'is_zero_real' + str(REAL_KIND)
+  logical pure function ${FUNCTION_NAME}$(x)
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+    ${FUNCTION_NAME}$ = is_zero_class( ieee_class(x) )
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+end module ${TEST_MODULE_NAME}$

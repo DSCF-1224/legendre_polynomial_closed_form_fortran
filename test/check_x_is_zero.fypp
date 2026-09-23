@@ -27,7 +27,7 @@ program ${PROGRAM_NAME}$
 
 
 
-  integer(int32), parameter :: minval_degree = 1
+  integer(int32), parameter :: minval_degree = 0
 
 
 

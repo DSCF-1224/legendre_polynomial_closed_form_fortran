@@ -68,5 +68,15 @@ jobs:
             fypp ${{ matrix.fypp_args }} "$f" "${f%.fypp}.f90"
           done
 
-      - name: Build
-        run: fpm build --profile debug
+      - name: Run tests (debug)
+        run: fpm test --profile debug
+
+      - name: Run tests (strict)
+        run: |
+          fpm clean --all
+          fpm test --profile debug --flag "-Werror"
+
+      - name: Run tests (release)
+        run: |
+          fpm clean --all
+          fpm test --profile release

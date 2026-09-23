@@ -2,7 +2,7 @@
 
 #:include '../src/common.fypp'
 
-#:set PROGRAM_NAME = 'check_x_is_zero'
+#:set PROGRAM_NAME = 'check_p_n_at_origin'
 
 #:def GENERATE_SUBROUTINE_NAME(real_kind)
 ${PROGRAM_NAME}$_real${str(real_kind)}$

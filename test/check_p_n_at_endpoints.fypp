@@ -1,0 +1,120 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:set PROGRAM_NAME = 'check_p_n_at_endpoints'
+
+#:def GENERATE_SUBROUTINE_NAME(real_kind)
+${PROGRAM_NAME}$_real${str(real_kind)}$
+#:enddef GENERATE_SUBROUTINE_NAME
+
+#:endmute
+program ${PROGRAM_NAME}$
+
+  use, intrinsic :: iso_fortran_env, only: error_unit
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
+
+  use, non_intrinsic :: test_utilities, only: is_zero
+
+
+
+  implicit none
+
+
+
+  integer(int32), parameter :: minval_degree = 0
+
+
+
+  #:for REAL_KIND in REAL_KINDS
+  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  #:endfor
+
+  print *, 'OK: ${PROGRAM_NAME}$'
+
+
+
+  contains
+
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$()
+
+    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
+
+
+    integer :: degree
+
+    real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$
+    real(real${REAL_KIND}$) :: error_${P_N_SELECTABLE_INTERFACE}$
+
+
+    plus_one: do degree = minval_degree, maxval_degree
+
+      actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, 1.0_real${REAL_KIND}$)
+
+      error_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$ - 1.0_real${REAL_KIND}$
+
+      if ( .not. is_zero(error_${P_N_SELECTABLE_INTERFACE}$) ) then
+
+        write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=1.0) was'
+        write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
+        write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=1.0) must be +1.'
+
+        error stop
+
+      end if
+
+    end do plus_one
+
+
+    minus_one: do degree = minval_degree, maxval_degree
+
+      actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, -1.0_real${REAL_KIND}$)
+
+
+      if ( mod(a=degree, p=2_int32) == 1 ) then
+
+        error_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$ - (-1.0_real${REAL_KIND}$)
+
+        if ( .not. is_zero(error_${P_N_SELECTABLE_INTERFACE}$) ) then
+
+          write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
+          write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
+          write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=-1.0) must be -1.'
+
+          error stop
+
+        end if
+
+      else
+
+        error_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$ - 1.0_real${REAL_KIND}$
+
+        if ( .not. is_zero(error_${P_N_SELECTABLE_INTERFACE}$) ) then
+
+          write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
+          write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
+          write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=-1.0) must be +1.'
+
+          error stop
+
+        end if
+
+      end if
+
+    end do minus_one
+
+  end subroutine ${SUBROUTINE_NAME}$
+  #:del SUBROUTINE_NAME
+
+  #:endfor
+  #! REAL_KIND
+end program ${PROGRAM_NAME}$

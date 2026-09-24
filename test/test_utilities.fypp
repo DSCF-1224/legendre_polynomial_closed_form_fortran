@@ -1,5 +1,17 @@
+#:mute
+
 #:include '../src/common.fypp'
 #:set TEST_MODULE_NAME = 'test_utilities'
+
+#:def INTERFACE_BLOCK(interface_name)
+  interface ${interface_name}$
+  #:for REAL_KIND in REAL_KINDS
+    module procedure :: ${interface_name}$_real${REAL_KIND}$
+  #:endfor
+  end interface ${interface_name}$
+#:enddef
+
+#:endmute
 module ${TEST_MODULE_NAME}$
 
   #:for REAL_KIND in REAL_KINDS
@@ -24,15 +36,7 @@ module ${TEST_MODULE_NAME}$
 
 
 
-
-  #:set INTERFACE_NAME = 'is_zero'
-  interface ${INTERFACE_NAME}$
-  #:for REAL_KIND in REAL_KINDS
-    module procedure :: ${INTERFACE_NAME}$_real${REAL_KIND}$
-  #:endfor
-  end interface ${INTERFACE_NAME}$
-  #:del INTERFACE_NAME
-
+  @:INTERFACE_BLOCK(is_zero)
 
 
   contains

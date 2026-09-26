@@ -29,10 +29,6 @@ numerator_deg${str(degree).zfill(2)}$_pow${str(degree - 2 * j).zfill(2)}$
 ${(-1)**j * math.comb(degree, j) * math.comb( ( 2 * (degree - j) ), degree )}$
 #:enddef NUMERATOR_VALUE
 
-#:def P_N_INTERFACE(degree)
-p_${str(degree).zfill(2)}$
-#:enddef P_N_INTERFACE
-
 #:def P_N_FUNCTION(degree, real_kind)
 ${P_N_INTERFACE(degree)}$_real${str(real_kind)}$
 #:enddef P_N_FUNCTION

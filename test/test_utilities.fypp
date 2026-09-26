@@ -3,11 +3,24 @@
 #:include '../src/common.fypp'
 #:set TEST_MODULE_NAME = 'test_utilities'
 
+#:def COMMENT_IS_EQUAL()
+    !! @warning
+    !! `a - b` must be finite
+    !! @endwarning
+#:enddef
+
 #:def INTERFACE_BLOCK(interface_name)
   interface ${interface_name}$
+  #:if interface_name == 'is_equal'
+    @:COMMENT_IS_EQUAL()
+
+  #:endif
   #:for REAL_KIND in REAL_KINDS
     module procedure :: ${interface_name}$_real${REAL_KIND}$
   #:endfor
+  #:if interface_name == 'is_equal'
+
+  #:endif
   end interface ${interface_name}$
 #:enddef
 
@@ -32,11 +45,15 @@ module ${TEST_MODULE_NAME}$
 
   private
 
+  public :: is_equal
   public :: is_zero
 
 
 
+  @:INTERFACE_BLOCK(is_equal)
+
   @:INTERFACE_BLOCK(is_zero)
+
 
 
   contains
@@ -63,6 +80,21 @@ module ${TEST_MODULE_NAME}$
     real(real${REAL_KIND}$), intent(in) :: x
 
     ${FUNCTION_NAME}$ = is_zero_class( ieee_class(x) )
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = 'is_equal_real' + str(REAL_KIND)
+  logical pure function ${FUNCTION_NAME}$(a, b)
+    @:COMMENT_IS_EQUAL()
+
+    real(real${REAL_KIND}$), intent(in) :: a, b
+
+    ${FUNCTION_NAME}$ = is_zero(a - b)
 
   end function ${FUNCTION_NAME}$
   #:del FUNCTION_NAME

@@ -1,0 +1,143 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:set PROGRAM_NAME = 'check_p_n_with_scipy'
+
+#:def GENERATE_SUBROUTINE_NAME(real_kind)
+${PROGRAM_NAME}$_real${str(real_kind)}$
+#:enddef GENERATE_SUBROUTINE_NAME
+
+#:endmute
+program ${PROGRAM_NAME}$
+
+  use, intrinsic :: iso_fortran_env, only: error_unit
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
+
+  use, non_intrinsic :: test_utilities, only: is_zero
+
+
+
+  implicit none
+
+
+
+  character(*), parameter :: ref_file = 'reference/scipy.dat'
+
+
+
+  #:for REAL_KIND in REAL_KINDS
+  #:if REAL_KIND == 32
+    #:set ALLOWABLE_ERROR = '1.0e-3'
+  #:elif REAL_KIND == 64
+    #:set ALLOWABLE_ERROR = '1.0e-7'
+  #:elif REAL_KIND == 128
+    #:set ALLOWABLE_ERROR = '1.0e-12'
+  #:endif
+  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$(${ALLOWABLE_ERROR}$_real${REAL_KIND}$)
+  #:endfor
+
+  print *, 'OK: ${PROGRAM_NAME}$'
+
+
+
+  contains
+
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$(allowable_error)
+
+    real(real${REAL_KIND}$), intent(in) :: allowable_error
+
+
+    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
+
+
+    integer :: degree
+
+    integer :: file_unit, iostat
+
+    real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$, err_abs_${P_N_SELECTABLE_INTERFACE}$, err_rel_${P_N_SELECTABLE_INTERFACE}$, scipy_${P_N_SELECTABLE_INTERFACE}$, x
+
+
+    call open_ref_file(file_unit)
+
+
+    do
+
+      read(unit=file_unit, fmt=*, iostat=iostat) degree, x, scipy_${P_N_SELECTABLE_INTERFACE}$
+
+      if (iostat /= 0) exit
+
+      if (degree > maxval_degree) cycle
+
+
+      actual_${P_N_SELECTABLE_INTERFACE}$  = ${P_N_SELECTABLE_INTERFACE}$(degree, x)
+      err_abs_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$  - scipy_${P_N_SELECTABLE_INTERFACE}$
+      err_rel_${P_N_SELECTABLE_INTERFACE}$ = err_abs_${P_N_SELECTABLE_INTERFACE}$ / scipy_${P_N_SELECTABLE_INTERFACE}$
+
+
+      if ( abs(err_rel_${P_N_SELECTABLE_INTERFACE}$) > allowable_error ) then
+
+        write(error_unit, fmt=*) 'precision     : real${REAL_KIND}$'
+        write(error_unit, fmt=*) 'degree, x     : ', degree, ',', x
+        write(error_unit, fmt=*) 'p_n (scipy)   : ', scipy_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) 'p_n (actual)  : ', actual_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) 'p_n (abs err) : ', err_abs_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) 'p_n (rel err) : ', err_rel_${P_N_SELECTABLE_INTERFACE}$
+
+        error stop
+
+      end if
+
+    end do
+
+
+    close(file_unit)
+
+  end subroutine ${SUBROUTINE_NAME}$
+  #:del SUBROUTINE_NAME
+
+  #:endfor
+  #! REAL_KIND
+
+
+  #:set SUBROUTINE_NAME = 'open_ref_file'
+  subroutine ${SUBROUTINE_NAME}$(file_unit)
+
+    integer, intent(out) :: file_unit
+
+
+    integer :: iostat
+
+    character(128) :: iomsg
+
+
+    open( &!
+      newunit = file_unit , &!
+      file    = ref_file  , &!
+      action  = 'read'    , &!
+      status  = 'old'     , &!
+      iostat  = iostat    , &!
+      iomsg   = iomsg       &!
+    )
+
+    if (iostat /= 0) then
+
+      write(error_unit, fmt=*) 'iostat : ', iostat
+      write(error_unit, fmt=*) 'iomsg  : ', trim(iomsg)
+
+      error stop
+
+    end if
+
+  end subroutine ${SUBROUTINE_NAME}$
+
+end program ${PROGRAM_NAME}$

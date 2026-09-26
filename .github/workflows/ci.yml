@@ -56,8 +56,8 @@ jobs:
         if: matrix.runner == 'ubuntu-24.04-arm'
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Install fypp
-        run: pip install fypp
+      - name: Install Python packages using pip
+        run: pip install fypp scipy
 
       - name: Generate source (${{ matrix.variant }})
         run: |
@@ -67,6 +67,12 @@ jobs:
           for f in test/*.fypp; do
             fypp ${{ matrix.fypp_args }} "$f" "${f%.fypp}.f90"
           done
+
+      - name: Generate reference data (${{ matrix.variant }})
+        run: |
+          fypp ${{ matrix.fypp_args }} -m scipy.special \
+               reference/scipy.fypp \
+               reference/scipy.dat
 
       - name: Run tests (debug)
         run: fpm test --profile debug

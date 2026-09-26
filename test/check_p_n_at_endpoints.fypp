@@ -72,38 +72,32 @@ program ${PROGRAM_NAME}$
     end do plus_one
 
 
-    minus_one: do degree = minval_degree, maxval_degree
+    minus_one: block
 
-      actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, -1.0_real${REAL_KIND}$)
+      integer :: expected_${P_N_SELECTABLE_INTERFACE}$
 
 
-      if ( mod(a=degree, p=2_int32) == 1 ) then
+      expected_${P_N_SELECTABLE_INTERFACE}$ = -1 ! initialization (the minval_degree must be even)
 
-        if ( .not. is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, -1.0_real${REAL_KIND}$) ) then
+
+      do degree = minval_degree, maxval_degree
+
+        expected_${P_N_SELECTABLE_INTERFACE}$ = - expected_${P_N_SELECTABLE_INTERFACE}$
+        actual_${P_N_SELECTABLE_INTERFACE}$   = ${P_N_SELECTABLE_INTERFACE}$(degree, -1.0_real${REAL_KIND}$)
+
+        if ( .not. is_equal( actual_${P_N_SELECTABLE_INTERFACE}$, real(expected_${P_N_SELECTABLE_INTERFACE}$, real${REAL_KIND}$) ) ) then
 
           write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
           write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
-          write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=-1.0) must be -1.'
+          write( error_unit, '(A,I0,A,1X,I0)'            ) 'p_{', degree, '} (x=-1.0) must be', expected_${P_N_SELECTABLE_INTERFACE}$
 
           error stop
 
         end if
 
-      else
+      end do
 
-        if ( .not. is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, 1.0_real${REAL_KIND}$) ) then
-
-          write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
-          write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
-          write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=-1.0) must be +1.'
-
-          error stop
-
-        end if
-
-      end if
-
-    end do minus_one
+    end block minus_one
 
   end subroutine ${SUBROUTINE_NAME}$
   #:del SUBROUTINE_NAME

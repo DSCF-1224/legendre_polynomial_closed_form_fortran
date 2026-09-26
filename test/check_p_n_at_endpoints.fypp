@@ -19,7 +19,7 @@ program ${PROGRAM_NAME}$
 
   use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
 
-  use, non_intrinsic :: test_utilities, only: is_zero
+  use, non_intrinsic :: test_utilities, only: is_equal
 
 
 
@@ -53,16 +53,13 @@ program ${PROGRAM_NAME}$
     integer :: degree
 
     real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$
-    real(real${REAL_KIND}$) :: error_${P_N_SELECTABLE_INTERFACE}$
 
 
     plus_one: do degree = minval_degree, maxval_degree
 
       actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, 1.0_real${REAL_KIND}$)
 
-      error_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$ - 1.0_real${REAL_KIND}$
-
-      if ( .not. is_zero(error_${P_N_SELECTABLE_INTERFACE}$) ) then
+      if ( .not. is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, 1.0_real${REAL_KIND}$) ) then
 
         write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=1.0) was'
         write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
@@ -82,9 +79,7 @@ program ${PROGRAM_NAME}$
 
       if ( mod(a=degree, p=2_int32) == 1 ) then
 
-        error_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$ - (-1.0_real${REAL_KIND}$)
-
-        if ( .not. is_zero(error_${P_N_SELECTABLE_INTERFACE}$) ) then
+        if ( .not. is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, -1.0_real${REAL_KIND}$) ) then
 
           write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
           write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
@@ -96,9 +91,7 @@ program ${PROGRAM_NAME}$
 
       else
 
-        error_${P_N_SELECTABLE_INTERFACE}$ = actual_${P_N_SELECTABLE_INTERFACE}$ - 1.0_real${REAL_KIND}$
-
-        if ( .not. is_zero(error_${P_N_SELECTABLE_INTERFACE}$) ) then
+        if ( .not. is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, 1.0_real${REAL_KIND}$) ) then
 
           write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
           write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$

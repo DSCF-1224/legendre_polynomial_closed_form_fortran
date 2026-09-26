@@ -77,10 +77,15 @@ jobs:
       - name: Run tests (debug)
         run: fpm test --profile debug
 
-      - name: Run tests (strict)
+      - name: Run tests (strict, 2008)
         run: |
           fpm clean --all
-          fpm test --profile debug --flag "-Werror"
+          fpm test --profile debug --flag "-Werror -std=f2008"
+
+      - name: Run tests (strict, 2018)
+        run: |
+          fpm clean --all
+          fpm test --profile debug --flag "-Werror -std=f2018"
 
       - name: Run tests (release)
         run: |

@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish-variant:
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - branch: default
+            fypp_args: ""
+          - branch: with_real128
+            fypp_args: "-DWITH_REAL128"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install fypp
+        run: pip install fypp
+
+      - name: Generate source
+        run: |
+          fypp ${{ matrix.fypp_args }} -m math \
+               src/legendre_polynomial_closed_form_fortran.fypp \
+               /tmp/legendre_polynomial_closed_form_fortran.f90
+
+      - name: Publish to ${{ matrix.branch }} branch
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B ${{ matrix.branch }}
+          rm -f src/common.fypp
+          rm -f src/legendre_polynomial_closed_form_fortran.fypp
+          rm -rf test/
+          rm -rf reference/
+          cp /tmp/legendre_polynomial_closed_form_fortran.f90 src/legendre_polynomial_closed_form_fortran.f90
+
+          sed -i "s/^version = .*/version = \"${GITHUB_REF_NAME#v}\"/" fpm.toml
+
+          git add -A
+          git add -f src/legendre_polynomial_closed_form_fortran.f90
+
+          git commit -m "chore: regenerate for ${GITHUB_REF_NAME}"
+          git tag "${GITHUB_REF_NAME}+${{ matrix.branch }}"
+
+          git push origin ${{ matrix.branch }} --force
+          git push origin "refs/tags/${GITHUB_REF_NAME}+${{ matrix.branch }}"

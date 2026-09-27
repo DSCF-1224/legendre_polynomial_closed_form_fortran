@@ -64,6 +64,11 @@ vcpkg_installed/
 # debug information files
 *.dwo
 
-# test output & cache
-Testing/
+# test/example output & cache
+example/*.*
+!example/*.fypp
 .cache/
+
+# fypp-generated source (regenerate with `fypp`)
+src/*.f90
+test/*.f90

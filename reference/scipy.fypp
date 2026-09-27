@@ -1,0 +1,7 @@
+#:include '../src/common.fypp'
+#:for RANGE_X in range(1, 8)
+#:set X = 0.125 * RANGE_X
+#:for DEGREE in range( 0, MAXVAL_DEGREE_INTERFACE )
+${DEGREE}$ ${X}$ ${scipy.special.eval_legendre(DEGREE, X)}$
+#:endfor
+#:endfor

@@ -1,0 +1,227 @@
+#:mute
+
+#:include 'common.fypp'
+
+#:def DENOMINATOR_NAME(degree)
+denominator_deg${str(degree).zfill(2)}$
+#:enddef DENOMINATOR_NAME
+
+#:def DENOMINATOR_VALUE(degree)
+${2 ** degree}$
+#:enddef DENOMINATOR_VALUE
+
+#:def NUMERATOR_INT_KIND(degree)
+#:if degree <= MAXVAL_DEGREE_INT32
+32
+#:elif degree <= MAXVAL_DEGREE_INT64
+64
+#:else
+#:stop '`degree` must be less than {}.'.format(MAXVAL_DEGREE_INT64 + 1)
+#:endif
+#:enddef NUMERATOR_INT_KIND
+
+#:def NUMERATOR_NAME(degree, j)
+#:assert degree >= (2 * j)
+numerator_deg${str(degree).zfill(2)}$_pow${str(degree - 2 * j).zfill(2)}$
+#:enddef NUMERATOR_NAME
+
+#:def NUMERATOR_VALUE(degree, j)
+${(-1)**j * math.comb(degree, j) * math.comb( ( 2 * (degree - j) ), degree )}$
+#:enddef NUMERATOR_VALUE
+
+#:def P_N_FUNCTION(degree, real_kind)
+${P_N_INTERFACE(degree)}$_real${str(real_kind)}$
+#:enddef P_N_FUNCTION
+
+#:endmute
+module ${MODULE_NAME}$
+
+  use, intrinsic :: iso_fortran_env, only: int32
+  use, intrinsic :: iso_fortran_env, only: int64
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, intrinsic :: ieee_arithmetic, only: ieee_signaling_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_value
+
+
+
+  implicit none
+
+
+
+  private
+
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
+  public :: ${P_N_INTERFACE(DEGREE)}$
+  #:endfor
+  public :: ${P_N_SELECTABLE_INTERFACE}$
+
+
+
+  #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
+  integer(int32), parameter :: ${DENOMINATOR_NAME(DEGREE)}$ = ${DENOMINATOR_VALUE(DEGREE).rjust(10)}$_int32
+  #:endfor
+
+
+
+  #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
+  #:for J in range( 0, (DEGREE//2 + 1) )
+  integer(int${NUMERATOR_INT_KIND(DEGREE)}$), parameter :: ${NUMERATOR_NAME(DEGREE, J)}$ = ${NUMERATOR_VALUE(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND(DEGREE)}$
+  #:endfor
+
+  #:endfor
+  #! DEGREE
+
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
+
+  #:set INTERFACE_NAME = P_N_INTERFACE(DEGREE)
+  interface ${INTERFACE_NAME}$
+    #:for REAL_KIND in REAL_KINDS
+    #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
+    module procedure ${P_N_FUNCTION(DEGREE, REAL_KIND)}$
+    #:endif
+    #:endfor
+  end interface ${INTERFACE_NAME}$
+  #:del INTERFACE_NAME
+
+  #:endfor
+  #! DEGREE
+
+  interface ${P_N_SELECTABLE_INTERFACE}$
+    #:for REAL_KIND in REAL_KINDS
+    module procedure ${P_N_SELECTABLE_FUNCTION(REAL_KIND)}$
+    #:endfor
+  end interface ${P_N_SELECTABLE_INTERFACE}$
+
+
+  contains
+
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = P_N_FUNCTION(0, REAL_KIND)
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+    ${FUNCTION_NAME}$ = real(1, kind=kind(x))
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+  #! REAL_KIND
+
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = P_N_FUNCTION(1, REAL_KIND)
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+    ${FUNCTION_NAME}$ = x
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+  #! REAL_KIND
+
+
+  #:set DEGREE = 2
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) / ${DENOMINATOR_NAME(DEGREE)}$
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+  #! REAL_KIND
+  #:del DEGREE
+
+
+  #:set DEGREE = 3
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) * x / ${DENOMINATOR_NAME(DEGREE)}$
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+  #! REAL_KIND
+  #:del DEGREE
+
+  #:for DEGREE in range( 4, (MAXVAL_DEGREE_INT64 + 1) )
+
+  #:for REAL_KIND in REAL_KINDS
+  #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
+
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+
+    real(real${REAL_KIND}$) :: x2
+
+
+    x2 = x * x
+
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME(DEGREE, 1)}$ + x2 * ${NUMERATOR_NAME(DEGREE, 0)}$
+    #:for J in range( 2, (DEGREE//2 + 1) )
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME(DEGREE, J)}$ + x2 * ${FUNCTION_NAME}$
+    #:endfor
+
+    ${FUNCTION_NAME}$ = ${FUNCTION_NAME}$#{if DEGREE % 2 != 0}# * x#{endif}# / ${DENOMINATOR_NAME(DEGREE)}$
+
+  end function ${FUNCTION_NAME}$
+
+  #:del FUNCTION_NAME
+  #:endif
+  #:endfor
+  #! REAL_KIND
+
+  #:endfor
+  #! DEGREE
+
+  #:for REAL_KIND in REAL_KINDS
+  #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(REAL_KIND)
+
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
+
+    integer(int32), intent(in) :: degree
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+
+    select case (degree)
+
+      #:for DEGREE in range(0, MAXVAL_DEGREE_REAL(REAL_KIND) + 1)
+      case ( ${str(DEGREE).rjust(2)}$_int32 ); ${FUNCTION_NAME}$ = ${P_N_INTERFACE(DEGREE)}$(x)
+      #:endfor
+
+      case default; ${FUNCTION_NAME}$ = ieee_value(x, ieee_signaling_nan)
+
+    end select
+
+  end function ${FUNCTION_NAME}$
+
+  #:del FUNCTION_NAME
+  #:endfor
+  #! REAL_KIND
+end module ${MODULE_NAME}$

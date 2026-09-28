@@ -18,6 +18,9 @@ program ${PROGRAM_NAME}$
   use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
   #:endfor
 
+  use, intrinsic :: ieee_exceptions, only: ieee_inexact
+  use, intrinsic :: ieee_exceptions, only: ieee_set_halting_mode
+
   use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
 
   use, non_intrinsic :: test_utilities, only: is_equal
@@ -28,6 +31,8 @@ program ${PROGRAM_NAME}$
   implicit none
 
 
+
+  call ieee_set_halting_mode(ieee_inexact, .true.)
 
   #:for REAL_KIND in REAL_KINDS
   call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()

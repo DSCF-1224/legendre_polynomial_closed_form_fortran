@@ -13,21 +13,19 @@ program ${PROGRAM_NAME}$
 
   use, intrinsic :: iso_fortran_env, only: error_unit
   use, intrinsic :: iso_fortran_env, only: int32
+  use, intrinsic :: iso_fortran_env, only: int64
   #:for REAL_KIND in REAL_KINDS
   use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
   #:endfor
 
   use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
 
+  use, non_intrinsic :: test_utilities, only: is_equal
   use, non_intrinsic :: test_utilities, only: is_zero
 
 
 
   implicit none
-
-
-
-  integer(int32), parameter :: minval_degree = 0
 
 
 
@@ -46,46 +44,85 @@ program ${PROGRAM_NAME}$
 
   #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$()
+    #:for DEGREE in range( 0, (MAXVAL_DEGREE_REAL(REAL_KIND) + 1) )
+    #:if DEGREE == 0
 
-    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
+    call check_even_degree_real${str(REAL_KIND)}$( &!
+      degree   = ${DEGREE}$_int32 , &!
+      actual   = ${P_N_SELECTABLE_INTERFACE}$( ${DEGREE}$_int32, 0.0_real${REAL_KIND}$ ) , &!
+      expected = 1.0_real${REAL_KIND}$ &!
+    )
+
+    #:elif (DEGREE % 2) == 0
+    #:set HALF_DEGREE = DEGREE // 2
+    #:set EXPECTED_NUMERATOR = ( (-1) ** HALF_DEGREE ) * math.comb(DEGREE, HALF_DEGREE)
+
+    call check_even_degree_real${str(REAL_KIND)}$( &!
+      degree   = ${DEGREE}$_int32 , &!
+      actual   = ${P_N_SELECTABLE_INTERFACE}$(${DEGREE}$_int32, 0.0_real${REAL_KIND}$) , &!
+      expected = ${EXPECTED_NUMERATOR}$_int#{if REAL_KIND == 32}#${REAL_KIND}$#{else}#64#{endif}# * (0.5_real${REAL_KIND}$ ** ${str(DEGREE).rjust(2)}$) &!
+    )
+
+    #:del HALF_DEGREE
+    #:del EXPECTED_NUMERATOR
+    #:else
+
+    call check_odd_degree_real${str(REAL_KIND)}$( &!
+      degree = ${DEGREE}$_int32 , &!
+      actual = ${P_N_SELECTABLE_INTERFACE}$( ${DEGREE}$_int32, 0.0_real${REAL_KIND}$ ) &!
+    )
+
+    #:endif
+    #:endfor
+  end subroutine ${SUBROUTINE_NAME}$
+  #:del SUBROUTINE_NAME
+
+  #:endfor
+  #! REAL_KIND
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = 'check_even_degree_real' + str(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$(degree, actual, expected)
+
+    integer(int32), intent(in) :: degree
+
+    real(real${REAL_KIND}$), intent(in) :: actual, expected
 
 
-    integer :: degree
-
-    real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$
+    if ( is_equal(actual, expected) ) return
 
 
-    do degree = minval_degree, maxval_degree
+    write(error_unit, *) 'degree   : ', degree
+    write(error_unit, *) 'expected : ', expected , '_real${str(REAL_KIND)}$'
+    write(error_unit, *) 'actual   : ', actual   , '_real${str(REAL_KIND)}$'
 
-      actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, 0.0_real${REAL_KIND}$)
+    error stop
 
-      if ( mod(a=degree, p=2_int32) == 1 ) then
+  end subroutine ${SUBROUTINE_NAME}$
+  #:del SUBROUTINE_NAME
 
-        if ( .not. is_zero(actual_${P_N_SELECTABLE_INTERFACE}$) ) then
+  #:endfor
+  #! REAL_KIND
 
-          write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=0.0) was'
-          write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
-          write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=0.0) must be zero.'
+  #:for REAL_KIND in REAL_KINDS
 
-          error stop
+  #:set SUBROUTINE_NAME = 'check_odd_degree_real' + str(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$(degree, actual)
 
-        end if
+    integer(int32), intent(in) :: degree
 
-      else
+    real(real${REAL_KIND}$), intent(in) :: actual
 
-        if ( is_zero(actual_${P_N_SELECTABLE_INTERFACE}$) ) then
 
-          write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=0.0) was'
-          write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
-          write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=0.0) must NOT be zero.'
+    if ( is_zero(actual) ) return
 
-          error stop
 
-        end if
+    write(error_unit, *) 'degree : ', degree
+    write(error_unit, *) 'actual : ', actual , '_real${str(REAL_KIND)}$'
+    write(error_unit, *) 'This must be zero.'
 
-      end if
-
-    end do
+    error stop
 
   end subroutine ${SUBROUTINE_NAME}$
   #:del SUBROUTINE_NAME

@@ -128,84 +128,27 @@ module ${MODULE_NAME}$
 
   contains
 
-
-  #:for REAL_KIND in REAL_KINDS
-
-  #:set FUNCTION_NAME = P_N_FUNCTION(0, REAL_KIND)
-  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
-
-    real(real${REAL_KIND}$), intent(in) :: x
-
-    ${FUNCTION_NAME}$ = real(1, kind=kind(x))
-
-  end function ${FUNCTION_NAME}$
-  #:del FUNCTION_NAME
-
-  #:endfor
   #! REAL_KIND
 
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
 
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = P_N_FUNCTION(1, REAL_KIND)
-  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
-
-    real(real${REAL_KIND}$), intent(in) :: x
-
-    ${FUNCTION_NAME}$ = x
-
-  end function ${FUNCTION_NAME}$
-  #:del FUNCTION_NAME
-
-  #:endfor
-  #! REAL_KIND
-
-
-  #:set DEGREE = 2
-  #:for REAL_KIND in REAL_KINDS
-
-  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
-  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
-
-    real(real${REAL_KIND}$), intent(in) :: x
-
-    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) / ${DENOMINATOR_NAME(DEGREE)}$
-
-  end function ${FUNCTION_NAME}$
-  #:del FUNCTION_NAME
-
-  #:endfor
-  #! REAL_KIND
-  #:del DEGREE
-
-
-  #:set DEGREE = 3
-  #:for REAL_KIND in REAL_KINDS
-
-  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
-  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
-
-    real(real${REAL_KIND}$), intent(in) :: x
-
-    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) * x / ${DENOMINATOR_NAME(DEGREE)}$
-
-  end function ${FUNCTION_NAME}$
-  #:del FUNCTION_NAME
-
-  #:endfor
-  #! REAL_KIND
-  #:del DEGREE
-
-  #:for DEGREE in range( 4, (MAXVAL_DEGREE_INT64 + 1) )
-
-  #:for REAL_KIND in REAL_KINDS
   #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
   #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
-
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
 
     real(real${REAL_KIND}$), intent(in) :: x
 
+    #:if DEGREE == 0
+    ${FUNCTION_NAME}$ = real(1, kind=kind(x))
+    #:elif DEGREE == 1
+    ${FUNCTION_NAME}$ = x
+    #:elif DEGREE == 2
+    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) / ${DENOMINATOR_NAME(DEGREE)}$
+    #:elif DEGREE == 3
+    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) * x / ${DENOMINATOR_NAME(DEGREE)}$
+    #:else
 
     real(real${REAL_KIND}$) :: x2
 
@@ -218,11 +161,12 @@ module ${MODULE_NAME}$
     #:endfor
 
     ${FUNCTION_NAME}$ = ${FUNCTION_NAME}$#{if DEGREE % 2 != 0}# * x#{endif}# / ${DENOMINATOR_NAME(DEGREE)}$
+    #:endif
 
   end function ${FUNCTION_NAME}$
-
   #:del FUNCTION_NAME
   #:endif
+
   #:endfor
   #! REAL_KIND
 

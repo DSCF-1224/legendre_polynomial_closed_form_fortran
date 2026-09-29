@@ -65,7 +65,7 @@ program ${PROGRAM_NAME}$
     call check_even_degree_real${str(REAL_KIND)}$( &!
       degree   = ${DEGREE}$_int32 , &!
       actual   = ${P_N_SELECTABLE_INTERFACE}$(${DEGREE}$_int32, 0.0_real${REAL_KIND}$) , &!
-      expected = ${EXPECTED_NUMERATOR}$_int#{if REAL_KIND == 32}#${REAL_KIND}$#{else}#64#{endif}# * (0.5_real${REAL_KIND}$ ** ${str(DEGREE).rjust(2)}$) &!
+      expected = ${EXPECTED_NUMERATOR}$_int${NUMERATOR_INT_KIND(DEGREE)}$ * (0.5_real${REAL_KIND}$ ** ${str(DEGREE).rjust(2)}$) &!
     )
 
     #:del HALF_DEGREE

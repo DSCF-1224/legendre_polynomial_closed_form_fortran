@@ -25,6 +25,15 @@ ${P_N_INTERFACE(degree)}$_real${str(real_kind)}$
 
 #:endmute
 module ${MODULE_NAME}$
+  !! Legendre polynomial evaluation for Fortran, via the closed-form expression.
+  !! @note
+  !! - \( P_n (x) \) is Legendre polynomial of degree \( n \)
+  #:if defined('WITH_REAL128')
+  !! - This module supports `real128`
+  #:else
+  !! - This module does NOT support `real128`
+  #:endif
+  !! @endnote
 
   use, intrinsic :: iso_fortran_env, only: int32
   use, intrinsic :: iso_fortran_env, only: int64
@@ -51,14 +60,14 @@ module ${MODULE_NAME}$
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
-  integer(int32), parameter :: ${DENOMINATOR_NAME(DEGREE)}$ = ${DENOMINATOR_VALUE(DEGREE).rjust(10)}$_int32
+  integer(int32), parameter :: ${DENOMINATOR_NAME(DEGREE)}$ = ${DENOMINATOR_VALUE(DEGREE).rjust(10)}$_int32 !! for \( P_{${str(DEGREE).rjust(2)}$} (x) \)
   #:endfor
 
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
   #:for J in range( 0, (DEGREE//2 + 1) )
-  integer(int${NUMERATOR_INT_KIND(DEGREE)}$), parameter :: ${NUMERATOR_NAME(DEGREE, J)}$ = ${NUMERATOR_VALUE(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND(DEGREE)}$
+  integer(int${NUMERATOR_INT_KIND(DEGREE)}$), parameter :: ${NUMERATOR_NAME(DEGREE, J)}$ = ${NUMERATOR_VALUE(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J}$} \) of \( P_{${DEGREE}$} (x) \)
   #:endfor
 
   #:endfor
@@ -66,6 +75,22 @@ module ${MODULE_NAME}$
 
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
 
+  !> version: experimental
+  #:if defined("WITH_REAL128")
+  #:if DEGREE <= MAXVAL_DEGREE_REAL32
+  !! \( P_{${DEGREE}$} (x) \) for `real32`, `real64` and `real128`
+  #:elif DEGREE <= MAXVAL_DEGREE_REAL64
+  !! \( P_{${DEGREE}$} (x) \) for `real64` and `real128`
+  #:else
+  !! \( P_{${DEGREE}$} (x) \) for `real128` only
+  #:endif
+  #:else
+  #:if DEGREE <= MAXVAL_DEGREE_REAL32
+  !! \( P_{${DEGREE}$} (x) \) for `real32` and `real64`
+  #:elif DEGREE <= MAXVAL_DEGREE_REAL64
+  !! \( P_{${DEGREE}$} (x) \) for `real64` only
+  #:endif
+  #:endif
   #:set INTERFACE_NAME = P_N_INTERFACE(DEGREE)
   interface ${INTERFACE_NAME}$
     #:for REAL_KIND in REAL_KINDS
@@ -79,6 +104,21 @@ module ${MODULE_NAME}$
   #:endfor
   #! DEGREE
 
+  !> version: experimental
+  !! $$
+  !! p_n (x) \ ( n = 0 , 1, \dots , N ),\ 
+  !! N =
+  !! \begin{cases}
+  #:if defined("WITH_REAL128")
+  !! ${MAXVAL_DEGREE_REAL( 32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL( 64)}$ & \text{for real64} \\
+  !! ${MAXVAL_DEGREE_REAL(128)}$ & \text{for real128}
+  #:else
+  !! ${MAXVAL_DEGREE_REAL(32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL(64)}$ & \text{for real64}
+  #:endif
+  !! \end{cases}
+  !! $$
   interface ${P_N_SELECTABLE_INTERFACE}$
     #:for REAL_KIND in REAL_KINDS
     module procedure ${P_N_SELECTABLE_FUNCTION(REAL_KIND)}$

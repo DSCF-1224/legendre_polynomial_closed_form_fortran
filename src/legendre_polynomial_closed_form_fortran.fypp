@@ -106,7 +106,7 @@ module ${MODULE_NAME}$
 
   !> version: experimental
   !! $$
-  !! p_n (x) \ ( n = 0 , 1, \dots , N ),\ 
+  !! P_n (x) \ ( n = 0 , 1, \dots , N ),\ 
   !! N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
@@ -137,6 +137,8 @@ module ${MODULE_NAME}$
   #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
   #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+    !! version: experimental
+    !! \( P_{${DEGREE}$} (x) \) for `real${REAL_KIND}$`
 
     real(real${REAL_KIND}$), intent(in) :: x
 
@@ -174,9 +176,11 @@ module ${MODULE_NAME}$
   #! DEGREE
 
   #:for REAL_KIND in REAL_KINDS
-  #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(REAL_KIND)
 
+  #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(REAL_KIND)
   real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
+    !! version: experimental
+    !! \( P_n (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `real${REAL_KIND}$`
 
     integer(int32), intent(in) :: degree
 
@@ -194,8 +198,8 @@ module ${MODULE_NAME}$
     end select
 
   end function ${FUNCTION_NAME}$
-
   #:del FUNCTION_NAME
+
   #:endfor
   #! REAL_KIND
 end module ${MODULE_NAME}$

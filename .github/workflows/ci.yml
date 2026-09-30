@@ -101,3 +101,10 @@ jobs:
       - name: Generate documentation
         if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
         run: ford ford.md
+
+      - name: Upload documentation files as artifact
+        if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
+        id: upload-pages
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: doc

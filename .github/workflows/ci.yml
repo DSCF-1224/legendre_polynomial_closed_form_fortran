@@ -91,3 +91,9 @@ jobs:
         run: |
           fpm clean --all
           fpm test --profile release
+
+      - name: Install graphviz
+        if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
+        run: |
+          sudo apt install -y graphviz
+          dot -V

@@ -1,5 +1,5 @@
 name = "legendre_polynomial_closed_form_fortran"
-version = "0.1.0"
+version = "0.1.1"
 license = "MIT"
 author = "DSCF-1224"
 maintainer = "37315588+DSCF-1224@users.noreply.github.com"

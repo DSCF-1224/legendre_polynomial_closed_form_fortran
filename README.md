@@ -1,2 +1,83 @@
 # legendre_polynomial_closed_form_fortran
-Multi-precision Legendre polynomial evaluation for Fortran, via the closed-form expression.
+
+[![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)](https://github.com/topics/fortran)
+[![Actions Status](https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/actions/workflows/ci.yml/badge.svg)](https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/actions)
+
+Legendre polynomial evaluation for Fortran, via the closed-form expression.
+
+This library evaluates the Legendre polynomials $P_n(x)$ directly from their closed-form
+coefficients. Each coefficient is an exact integer over a common denominator of $2^n$, computed
+via Python's [`math.comb`][math-comb] when the `.fypp` source is expanded to Fortran by
+[Fypp][fypp]. This happens once, at generation time; the published [`default`][branch-default]/
+[`with_real128`][branch-with-real128] branches contain only the generated `.f90`, so consumers
+never need Python themselves. Evaluation itself uses Horner's method.
+
+[math-comb]: https://docs.python.org/3/library/math.html#math.comb
+[fypp]: https://github.com/aradi/fypp
+[branch-default]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/default
+[branch-with-real128]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/with_real128
+
+## Supported degrees
+
+This library requires that every integer numerator involved be exactly representable, without
+loss of precision, in the mantissa of the real kind it's evaluated in. The supported degree
+range for each kind follows from that requirement:
+
+| Real kind  | Degree range | Notes                                        |
+| ---------- | ------------ | --------------------------------------------- |
+| `real32`   | 0 – 13       |                                                |
+| `real64`   | 0 – 27       |                                                |
+| `real128`  | 0 – 30       | only in the `with_real128` branch (see below) |
+
+`real128` support — and with it, degrees 28–30 — is available only in the `with_real128`
+branch. `real32` and `real64` have the same degree range in either branch.
+
+## Usage
+
+Each degree has its own generic interface, resolved at compile time:
+
+```fortran
+use legendre_polynomial_closed_form_fortran, only: p_05
+
+real(real64) :: x, y
+
+x = 0.5_real64
+y = p_05(x)   ! P_5(0.5)
+```
+
+For a degree chosen at run time, `p_n(degree, x)` selects the matching `p_NN` via a `select
+case` on `degree`. If `degree` is negative, or exceeds the maximum degree available for `x`'s
+kind, it returns a signaling NaN rather than failing to compile or run:
+
+```fortran
+use legendre_polynomial_closed_form_fortran, only: p_n
+
+real(real64) :: x, y
+integer :: degree
+
+degree = 5
+x = 0.5_real64
+y = p_n(degree, x)   ! same value as p_05(x)
+```
+
+## Precision
+
+Evaluation at $x = -1$, $0$, and $1$ is exact — no rounding error — for every supported degree
+and real kind. Away from these points, cancellation among the coefficients grows with degree,
+and the resulting relative error grows accordingly.
+
+## Installation
+
+Add this as a dependency in your `fpm.toml`, pointing at either the `default` branch (`real32`
+and `real64` only) or the `with_real128` branch (adds `real128`):
+
+```toml
+[dependencies]
+legendre_polynomial_closed_form_fortran = { git = "https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran", branch = "default" }
+```
+
+Pin to a specific release instead of a branch by using its tag (e.g. `tag = "v0.1.0+default"`).
+
+## License
+
+MIT

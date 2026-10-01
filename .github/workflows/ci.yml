@@ -57,7 +57,7 @@ jobs:
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install Python packages using pip
-        run: pip install fypp scipy
+        run: pip install ford fypp scipy
 
       - name: Generate source (${{ matrix.variant }})
         run: |
@@ -65,7 +65,7 @@ jobs:
                src/legendre_polynomial_closed_form_fortran.fypp \
                src/legendre_polynomial_closed_form_fortran.f90
           for f in test/*.fypp; do
-            fypp ${{ matrix.fypp_args }} "$f" "${f%.fypp}.f90"
+            fypp ${{ matrix.fypp_args }} -m math "$f" "${f%.fypp}.f90"
           done
 
       - name: Generate reference data (${{ matrix.variant }})
@@ -91,3 +91,42 @@ jobs:
         run: |
           fpm clean --all
           fpm test --profile release
+
+      - name: Install graphviz
+        if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
+        run: |
+          sudo apt install -y graphviz
+          dot -V
+
+      - name: Generate documentation
+        if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
+        run: ford ford.md
+
+      - name: Upload documentation files as artifact
+        if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
+        id: upload-pages
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: doc
+
+  deploy-documentation:
+
+    needs: test
+
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
+
+    steps:
+
+      - name: Deploy to GitHub Pages
+        id: deploy-pages
+        uses: actions/deploy-pages@v5

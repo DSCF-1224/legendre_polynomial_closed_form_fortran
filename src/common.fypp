@@ -19,6 +19,16 @@
 
 #:set CHECK_REAL_KIND = lambda real_kind, degree: (real_kind == 32 and degree <= MAXVAL_DEGREE_REAL32) or (real_kind == 64 and degree <= MAXVAL_DEGREE_REAL64) or (real_kind == 128)
 
+#:def NUMERATOR_INT_KIND(degree)
+#:if degree <= MAXVAL_DEGREE_INT32
+32
+#:elif degree <= MAXVAL_DEGREE_INT64
+64
+#:else
+#:stop '`degree` must be less than {}.'.format(MAXVAL_DEGREE_INT64 + 1)
+#:endif
+#:enddef NUMERATOR_INT_KIND
+
 #:def P_N_INTERFACE(degree)
 p_${str(degree).zfill(2)}$
 #:enddef P_N_INTERFACE

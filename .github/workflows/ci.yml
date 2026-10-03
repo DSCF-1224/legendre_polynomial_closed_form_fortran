@@ -98,6 +98,24 @@ jobs:
           fpm clean --all
           fpm test --profile release
 
+      - name: Run examples (debug)
+        run: fpm run --example --profile debug
+
+      - name: Run examples (strict, 2008)
+        run: |
+          fpm clean --all
+          fpm run --example --profile debug --flag "-Werror -std=f2008"
+
+      - name: Run examples (strict, 2018)
+        run: |
+          fpm clean --all
+          fpm run --example --profile debug --flag "-Werror -std=f2018"
+
+      - name: Run examples (release)
+        run: |
+          fpm clean --all
+          fpm run --example --profile release
+
       - name: Install graphviz
         if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
         run: |

@@ -70,6 +70,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m math \
                example/demo_p_n_fortran.fypp \
                example/demo_p_n.f90
+          fypp ${{ matrix.fypp_args }} \
+               example/demo_p_n_gnuplot.fypp \
+               example/demo_p_n.gpl
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |

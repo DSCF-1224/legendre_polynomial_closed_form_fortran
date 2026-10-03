@@ -67,6 +67,9 @@ jobs:
           for f in test/*.fypp; do
             fypp ${{ matrix.fypp_args }} -m math "$f" "${f%.fypp}.f90"
           done
+          fypp ${{ matrix.fypp_args }} -m math \
+               example/demo_p_n_fortran.fypp \
+               example/demo_p_n.f90
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |

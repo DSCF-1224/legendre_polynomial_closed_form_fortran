@@ -125,6 +125,14 @@ jobs:
           gnuplot --version
           gnuplot example/demo_p_n.gpl
 
+      - name: Upload example outputs as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: example-outputs-${{ matrix.runner }}-${{ matrix.variant }}
+          path: |
+            example/*.svg
+            example/*.dat
+
       - name: Install graphviz
         if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
         run: |

@@ -119,6 +119,12 @@ jobs:
           fpm clean --all
           fpm run --example --profile release
 
+      - name: Install & run gnuplot
+        run: |
+          sudo apt install -y gnuplot
+          gnuplot --version
+          gnuplot example/demo_p_n.gpl
+
       - name: Install graphviz
         if: matrix.runner == 'ubuntu-latest' && matrix.variant == 'with_real128'
         run: |

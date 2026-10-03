@@ -1,0 +1,11 @@
+#:include '../src/common.fypp'
+#:set NUM_POINTS = 1024
+#:set STEP_X = 1.0 / NUM_POINTS
+#:for RANGE_X in range( (- NUM_POINTS), (NUM_POINTS + 1) )
+#:set X = STEP_X * RANGE_X
+#:set STR = str(X)
+#:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
+#:set STR = STR + " " + str( scipy.special.eval_legendre(DEGREE, X) )
+#:endfor
+${STR}$
+#:endfor

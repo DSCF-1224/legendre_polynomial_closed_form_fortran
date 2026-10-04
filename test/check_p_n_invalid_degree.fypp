@@ -4,8 +4,8 @@
 
 #:set PROGRAM_NAME = 'check_p_n_invalid_degree'
 
-#:def GENERATE_SUBROUTINE_NAME(real_kind)
-${PROGRAM_NAME}$_real${str(real_kind)}$
+#:def GENERATE_SUBROUTINE_NAME(data_type, real_kind)
+${PROGRAM_NAME}$_${data_type}$${str(real_kind)}$
 #:enddef GENERATE_SUBROUTINE_NAME
 
 #:endmute
@@ -27,8 +27,10 @@ program ${PROGRAM_NAME}$
 
 
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
-  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  call ${GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)}$()
+  #:endfor
   #:endfor
 
   print *, 'OK: ${PROGRAM_NAME}$'
@@ -38,9 +40,10 @@ program ${PROGRAM_NAME}$
   contains
 
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$()
 
     integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
@@ -48,7 +51,7 @@ program ${PROGRAM_NAME}$
 
     integer :: degree
 
-    real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$, x
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$, x
 
 
     do degree = (-10_int32 * maxval_degree), (10_int32 * maxval_degree)
@@ -61,10 +64,47 @@ program ${PROGRAM_NAME}$
 
         case default
 
+          #:if DATA_TYPE == 'complex'
+          block
+
+            real(real${REAL_KIND}$) :: tmp
+
+
+            call random_number(tmp); x%re = tmp
+            call random_number(tmp); x%im = tmp
+
+          end block
+          #:elif DATA_TYPE == 'real'
           call random_number(x)
+          #:endif
 
           actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, x)
 
+          #:if DATA_TYPE == 'complex'
+          block
+
+            logical :: flag_real, flag_imag
+
+
+            flag_real = .not. ieee_is_nan(actual_${P_N_SELECTABLE_INTERFACE}$%re)
+            flag_imag = .not. ieee_is_nan(actual_${P_N_SELECTABLE_INTERFACE}$%im)
+
+
+            if (flag_real .or. flag_imag) then
+
+              write(error_unit, *) 'n         : ', degree
+              write(error_unit, *) 'x%re      : ', x%re
+              write(error_unit, *) 'x%im      : ', x%im
+              write(error_unit, *) 'p_n(x)%re : ', actual_${P_N_SELECTABLE_INTERFACE}$%re
+              write(error_unit, *) 'p_n(x)%im : ', actual_${P_N_SELECTABLE_INTERFACE}$%im
+              write(error_unit, *) 'This value must be NaN.'
+
+            error stop
+
+            end if
+
+          end block
+          #:elif DATA_TYPE == 'real'
           if ( .not. ieee_is_nan(actual_${P_N_SELECTABLE_INTERFACE}$) ) then
 
             write(error_unit, *) 'n, x   : ', degree, ',', x
@@ -74,6 +114,7 @@ program ${PROGRAM_NAME}$
             error stop
 
           end if
+          #:endif
 
       end select
 
@@ -84,4 +125,6 @@ program ${PROGRAM_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 end program ${PROGRAM_NAME}$

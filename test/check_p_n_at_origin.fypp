@@ -4,8 +4,8 @@
 
 #:set PROGRAM_NAME = 'check_p_n_at_origin'
 
-#:def GENERATE_SUBROUTINE_NAME(real_kind)
-${PROGRAM_NAME}$_real${str(real_kind)}$
+#:def GENERATE_SUBROUTINE_NAME(data_type, real_kind)
+${PROGRAM_NAME}$_${data_type}$${str(real_kind)}$
 #:enddef GENERATE_SUBROUTINE_NAME
 
 #:endmute
@@ -31,11 +31,21 @@ program ${PROGRAM_NAME}$
   implicit none
 
 
-
-  call ieee_set_halting_mode(ieee_inexact, .true.)
+  #:for DATA_TYPE in DATA_TYPES
 
   #:for REAL_KIND in REAL_KINDS
-  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  ${DATA_TYPE}$(real${REAL_KIND}$), parameter :: zero_${DATA_TYPE}$${REAL_KIND}$ = #{if DATA_TYPE == 'complex'}#cmplx(0.0_real${REAL_KIND}$, 0.0_real${REAL_KIND}$, real${REAL_KIND}$)#{elif DATA_TYPE == 'real'}#0.0_real${REAL_KIND}$#{endif}#
+  #:endfor
+  #:endfor
+
+
+
+  call ieee_set_halting_mode(ieee_inexact, .true.)
+  #:for DATA_TYPE in DATA_TYPES
+  
+  #:for REAL_KIND in REAL_KINDS
+  call ${GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)}$()
+  #:endfor
   #:endfor
 
   print *, 'OK: ${PROGRAM_NAME}$'
@@ -45,16 +55,17 @@ program ${PROGRAM_NAME}$
   contains
 
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$()
     #:for DEGREE in range( 0, (MAXVAL_DEGREE_REAL(REAL_KIND) + 1) )
     #:if DEGREE == 0
 
-    call check_even_degree_real${str(REAL_KIND)}$( &!
+    call check_even_degree_${DATA_TYPE}$${str(REAL_KIND)}$( &!
       degree   = ${DEGREE}$_int32 , &!
-      actual   = ${P_N_SELECTABLE_INTERFACE}$( ${DEGREE}$_int32, 0.0_real${REAL_KIND}$ ) , &!
+      actual   = ${P_N_SELECTABLE_INTERFACE}$(${DEGREE}$_int32, zero_${DATA_TYPE}$${REAL_KIND}$) , &!
       expected = 1.0_real${REAL_KIND}$ &!
     )
 
@@ -62,9 +73,9 @@ program ${PROGRAM_NAME}$
     #:set HALF_DEGREE = DEGREE // 2
     #:set EXPECTED_NUMERATOR = ( (-1) ** HALF_DEGREE ) * math.comb(DEGREE, HALF_DEGREE)
 
-    call check_even_degree_real${str(REAL_KIND)}$( &!
+    call check_even_degree_${DATA_TYPE}$${str(REAL_KIND)}$( &!
       degree   = ${DEGREE}$_int32 , &!
-      actual   = ${P_N_SELECTABLE_INTERFACE}$(${DEGREE}$_int32, 0.0_real${REAL_KIND}$) , &!
+      actual   = ${P_N_SELECTABLE_INTERFACE}$(${DEGREE}$_int32, zero_${DATA_TYPE}$${REAL_KIND}$) , &!
       expected = ${EXPECTED_NUMERATOR}$_int${NUMERATOR_INT_KIND(DEGREE)}$ * (0.5_real${REAL_KIND}$ ** ${str(DEGREE).rjust(2)}$) &!
     )
 
@@ -72,9 +83,9 @@ program ${PROGRAM_NAME}$
     #:del EXPECTED_NUMERATOR
     #:else
 
-    call check_odd_degree_real${str(REAL_KIND)}$( &!
+    call check_odd_degree_${DATA_TYPE}$${str(REAL_KIND)}$( &!
       degree = ${DEGREE}$_int32 , &!
-      actual = ${P_N_SELECTABLE_INTERFACE}$( ${DEGREE}$_int32, 0.0_real${REAL_KIND}$ ) &!
+      actual = ${P_N_SELECTABLE_INTERFACE}$(${DEGREE}$_int32, zero_${DATA_TYPE}$${REAL_KIND}$) &!
     )
 
     #:endif
@@ -84,23 +95,38 @@ program ${PROGRAM_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set SUBROUTINE_NAME = 'check_even_degree_real' + str(REAL_KIND)
+  #:set SUBROUTINE_NAME = 'check_even_degree_' + DATA_TYPE + str(REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$(degree, actual, expected)
 
     integer(int32), intent(in) :: degree
 
-    real(real${REAL_KIND}$), intent(in) :: actual, expected
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: actual
+
+    real(real${REAL_KIND}$), intent(in) :: expected
 
 
+    #:if DATA_TYPE == 'complex'
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: ${DATA_TYPE}$_expected
+
+
+    ${DATA_TYPE}$_expected%re = expected
+    ${DATA_TYPE}$_expected%im = zero_real${REAL_KIND}$
+
+
+    if ( is_equal(actual, ${DATA_TYPE}$_expected) ) return
+    #:elif DATA_TYPE == 'real'
     if ( is_equal(actual, expected) ) return
-
+    #:endif
 
     write(error_unit, *) 'degree   : ', degree
-    write(error_unit, *) 'expected : ', expected , '_real${str(REAL_KIND)}$'
-    write(error_unit, *) 'actual   : ', actual   , '_real${str(REAL_KIND)}$'
+    write(error_unit, *) 'expected : ', expected
+    write(error_unit, *) 'actual   : ', actual
 
     error stop
 
@@ -109,22 +135,25 @@ program ${PROGRAM_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set SUBROUTINE_NAME = 'check_odd_degree_real' + str(REAL_KIND)
+  #:set SUBROUTINE_NAME = 'check_odd_degree_' + DATA_TYPE + str(REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$(degree, actual)
 
     integer(int32), intent(in) :: degree
 
-    real(real${REAL_KIND}$), intent(in) :: actual
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: actual
 
 
     if ( is_zero(actual) ) return
 
 
     write(error_unit, *) 'degree : ', degree
-    write(error_unit, *) 'actual : ', actual , '_real${str(REAL_KIND)}$'
+    write(error_unit, *) 'actual : ', actual
     write(error_unit, *) 'This must be zero.'
 
     error stop
@@ -134,4 +163,6 @@ program ${PROGRAM_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 end program ${PROGRAM_NAME}$

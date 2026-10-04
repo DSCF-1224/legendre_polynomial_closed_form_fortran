@@ -77,7 +77,7 @@ and `real64` only) or the `with_real128` branch (adds `real128`):
 legendre_polynomial_closed_form_fortran = { git = "https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran", branch = "default" }
 ```
 
-Pin to a specific release instead of a branch by using its tag (e.g. `tag = "v0.1.0+default"`).
+Pin to a specific release instead of a branch by using its tag (e.g. `tag = "v0.1.2+default"`).
 
 ## Example
 

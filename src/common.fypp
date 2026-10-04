@@ -37,8 +37,8 @@ p_${str(degree).zfill(2)}$
 
 #:set P_N_SELECTABLE_INTERFACE = 'p_n'
 
-#:def P_N_SELECTABLE_FUNCTION(real_kind)
-${P_N_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
+#:def P_N_SELECTABLE_FUNCTION(data_type, real_kind)
+${P_N_SELECTABLE_INTERFACE}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_SELECTABLE_FUNCTION
 
 #:endmute

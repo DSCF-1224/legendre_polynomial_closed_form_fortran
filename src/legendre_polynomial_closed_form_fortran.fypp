@@ -122,8 +122,10 @@ module ${MODULE_NAME}$
   !! \end{cases}
   !! $$
   interface ${P_N_SELECTABLE_INTERFACE}$
+    #:for DATA_TYPE in DATA_TYPES
     #:for REAL_KIND in REAL_KINDS
-    module procedure ${P_N_SELECTABLE_FUNCTION(REAL_KIND)}$
+    module procedure ${P_N_SELECTABLE_FUNCTION(DATA_TYPE, REAL_KIND)}$
+    #:endfor
     #:endfor
   end interface ${P_N_SELECTABLE_INTERFACE}$
 
@@ -180,16 +182,17 @@ module ${MODULE_NAME}$
   #:endfor
   #! DEGREE
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(REAL_KIND)
-  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
+  #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(DATA_TYPE, REAL_KIND)
+  ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
     !! version: experimental
-    !! \( P_n (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `real${REAL_KIND}$`
+    !! \( P_n (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
 
     integer(int32), intent(in) :: degree
 
-    real(real${REAL_KIND}$), intent(in) :: x
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
 
 
     select case (degree)
@@ -198,7 +201,19 @@ module ${MODULE_NAME}$
       case ( ${str(DEGREE).rjust(2)}$_int32 ); ${FUNCTION_NAME}$ = ${P_N_INTERFACE(DEGREE)}$(x)
       #:endfor
 
+      #:if DATA_TYPE == 'complex'
+      case default
+      block
+
+          real(real${REAL_KIND}$) :: tmp
+
+          ${"tmp".ljust(len(FUNCTION_NAME))}$ = ieee_value(real(x), ieee_signaling_nan)
+          ${FUNCTION_NAME}$ = cmplx(tmp, tmp, real${REAL_KIND}$)
+
+      end block
+      #:elif DATA_TYPE == 'real'
       case default; ${FUNCTION_NAME}$ = ieee_value(x, ieee_signaling_nan)
+      #:endif
 
     end select
 
@@ -207,4 +222,6 @@ module ${MODULE_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 end module ${MODULE_NAME}$

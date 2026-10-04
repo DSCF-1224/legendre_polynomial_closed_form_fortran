@@ -19,8 +19,8 @@ numerator_deg${str(degree).zfill(2)}$_pow${str(degree - 2 * j).zfill(2)}$
 ${(-1)**j * math.comb(degree, j) * math.comb( ( 2 * (degree - j) ), degree )}$
 #:enddef NUMERATOR_VALUE
 
-#:def P_N_FUNCTION(degree, real_kind)
-${P_N_INTERFACE(degree)}$_real${str(real_kind)}$
+#:def P_N_FUNCTION(degree, data_type, real_kind)
+${P_N_INTERFACE(degree)}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_FUNCTION
 
 #:endmute
@@ -93,10 +93,12 @@ module ${MODULE_NAME}$
   #:endif
   #:set INTERFACE_NAME = P_N_INTERFACE(DEGREE)
   interface ${INTERFACE_NAME}$
+    #:for DATA_TYPE in DATA_TYPES
     #:for REAL_KIND in REAL_KINDS
     #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
-    module procedure ${P_N_FUNCTION(DEGREE, REAL_KIND)}$
+    module procedure ${P_N_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)}$
     #:endif
+    #:endfor
     #:endfor
   end interface ${INTERFACE_NAME}$
   #:del INTERFACE_NAME
@@ -132,15 +134,16 @@ module ${MODULE_NAME}$
 
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
   #:if CHECK_REAL_KIND(REAL_KIND, DEGREE)
-  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, REAL_KIND)
-  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+  #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)
+  ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
     !! version: experimental
-    !! \( P_{${DEGREE}$} (x) \) for `real${REAL_KIND}$`
+    !! \( P_{${DEGREE}$} (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
 
-    real(real${REAL_KIND}$), intent(in) :: x
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
 
     #:if DEGREE == 0
     ${FUNCTION_NAME}$ = real(1, kind=kind(x))
@@ -152,7 +155,7 @@ module ${MODULE_NAME}$
     ${FUNCTION_NAME}$ = (${NUMERATOR_NAME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME(DEGREE, 1)}$) * x / ${DENOMINATOR_NAME(DEGREE)}$
     #:else
 
-    real(real${REAL_KIND}$) :: x2
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: x2
 
 
     x2 = x * x
@@ -171,6 +174,8 @@ module ${MODULE_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 
   #:endfor
   #! DEGREE

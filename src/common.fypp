@@ -2,6 +2,8 @@
 
 #:set MODULE_NAME = 'legendre_polynomial_closed_form_fortran'
 
+#:set DATA_TYPES = ['complex', 'real']
+
 #:set MAXVAL_DEGREE_INT32  = 15
 #:set MAXVAL_DEGREE_REAL32 = 13
 #:set MAXVAL_DEGREE_REAL64 = 27

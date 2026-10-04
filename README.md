@@ -2,6 +2,7 @@
 
 [![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)](https://github.com/topics/fortran)
 [![Actions Status](https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/actions/workflows/ci.yml/badge.svg)](https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/actions)
+[![Documentation](https://img.shields.io/badge/docs-ford-blue)](https://dscf-1224.github.io/legendre_polynomial_closed_form_fortran/)
 
 Legendre polynomial evaluation for Fortran, via the closed-form expression.
 
@@ -77,6 +78,21 @@ legendre_polynomial_closed_form_fortran = { git = "https://github.com/DSCF-1224/
 ```
 
 Pin to a specific release instead of a branch by using its tag (e.g. `tag = "v0.1.0+default"`).
+
+## Example
+
+`example/demo_p_n_fortran.f90` evaluates `p_n(degree, x)` for every supported degree and real
+kind over $x \in [-1, 1]$, compares each value against [SciPy][scipy]'s
+[`scipy.special.eval_legendre`][scipy-eval-legendre], and writes the results and the error to
+`.dat` files; `example/demo_p_n_gnuplot.gpl` plots both as SVGs with [gnuplot][gnuplot]. This is
+for developing and verifying the library itself, so it isn't included in the
+[`default`][branch-default]/[`with_real128`][branch-with-real128] branches — see it, and the
+`.fypp` sources it's generated from, on [`main`][main-example].
+
+[scipy]: https://scipy.org/
+[scipy-eval-legendre]: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.eval_legendre.html
+[gnuplot]: http://www.gnuplot.info/
+[main-example]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/main/example
 
 ## License
 

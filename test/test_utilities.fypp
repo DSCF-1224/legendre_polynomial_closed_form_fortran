@@ -15,8 +15,10 @@
     @:COMMENT_IS_EQUAL()
 
   #:endif
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
-    module procedure :: ${interface_name}$_real${REAL_KIND}$
+    module procedure :: ${interface_name}$_${DATA_TYPE}$${REAL_KIND}$
+  #:endfor
   #:endfor
   #:if interface_name == 'is_equal'
 
@@ -72,27 +74,36 @@ module ${TEST_MODULE_NAME}$
   end function ${FUNCTION_NAME}$
   #:del FUNCTION_NAME
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = 'is_zero_real' + str(REAL_KIND)
+  #:set FUNCTION_NAME = 'is_zero_' + DATA_TYPE + str(REAL_KIND)
   logical pure function ${FUNCTION_NAME}$(x)
 
-    real(real${REAL_KIND}$), intent(in) :: x
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
 
+    #:if DATA_TYPE == 'complex'
+    ${FUNCTION_NAME}$ = is_zero(x%re) .and. is_zero(x%im)
+    #:elif DATA_TYPE == 'real'
     ${FUNCTION_NAME}$ = is_zero_class( ieee_class(x) )
+    #:endif
 
   end function ${FUNCTION_NAME}$
   #:del FUNCTION_NAME
 
   #:endfor
+  #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set FUNCTION_NAME = 'is_equal_real' + str(REAL_KIND)
+  #:set FUNCTION_NAME = 'is_equal_' + DATA_TYPE + str(REAL_KIND)
   logical pure function ${FUNCTION_NAME}$(a, b)
     @:COMMENT_IS_EQUAL()
 
-    real(real${REAL_KIND}$), intent(in) :: a, b
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: a, b
 
     ${FUNCTION_NAME}$ = is_zero(a - b)
 
@@ -100,4 +111,7 @@ module ${TEST_MODULE_NAME}$
   #:del FUNCTION_NAME
 
   #:endfor
+  #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 end module ${TEST_MODULE_NAME}$

@@ -1,6 +1,8 @@
 #:include '../src/common.fypp'
-#:for RANGE_X in range(1, 8)
-#:set X = 0.125 * RANGE_X
+#:set NUM_POINTS = 8
+#:set STEP_X = 1.0 / NUM_POINTS
+#:for RANGE_X in range(1, NUM_POINTS)
+#:set X = STEP_X * RANGE_X
 #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
 ${DEGREE}$ ${X}$ ${scipy.special.eval_legendre(DEGREE, X)}$
 #:endfor

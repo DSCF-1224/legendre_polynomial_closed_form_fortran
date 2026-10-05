@@ -65,7 +65,9 @@ y = p_n(degree, x)   ! same value as p_05(x)
 
 Evaluation at $x = -1$, $0$, and $1$ is exact — no rounding error — for every supported degree
 and real kind. Away from these points, cancellation among the coefficients grows with degree,
-and the resulting relative error grows accordingly.
+and the resulting relative error grows accordingly. For `complex` arguments, each multiplication
+involves more floating-point operations than the `real` case, so precision may degrade somewhat
+faster with degree.
 
 ## Installation
 

@@ -31,7 +31,9 @@ range for each kind follows from that requirement:
 | `real128`  | 0 – 30       | only in the `with_real128` branch (see below) |
 
 `real128` support — and with it, degrees 28–30 — is available only in the `with_real128`
-branch. `real32` and `real64` have the same degree range in either branch.
+branch. `real32` and `real64` have the same degree range in either branch. Each `realXX`
+range also applies to `complex(realXX)`: the coefficients are shared, so the degree limit
+depends only on the kind, not on whether the argument is real or complex.
 
 ## Usage
 
@@ -59,6 +61,17 @@ integer :: degree
 degree = 5
 x = 0.5_real64
 y = p_n(degree, x)   ! same value as p_05(x)
+```
+
+Both `p_NN` and `p_n` also accept `complex(realXX)`, resolved via the same generic interfaces:
+
+```fortran
+use legendre_polynomial_closed_form_fortran, only: p_05
+
+complex(real64) :: z, w
+
+z = cmplx(0.3_real64, 0.4_real64, real64)
+w = p_05(z)   ! P_5(0.3 + 0.4i)
 ```
 
 ## Precision

@@ -82,6 +82,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} -F -m scipy.special \
                example/scipy_real.fypp \
                example/scipy_real.dat
+          fypp ${{ matrix.fypp_args }} -F -m math -m scipy.special \
+               example/scipy_complex.fypp \
+               example/scipy_complex.dat
 
       - name: Run tests (debug)
         run: fpm test --profile debug

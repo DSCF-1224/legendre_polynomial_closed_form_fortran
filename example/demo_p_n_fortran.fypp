@@ -28,7 +28,7 @@ program ${PROGRAM_NAME}$
 
   integer(int32), parameter :: maxval_degree_interface = ${MAXVAL_DEGREE_INTERFACE}$
 
-  character(*), parameter :: ref_file = 'example/scipy.dat'
+  character(*), parameter :: ref_file = 'example/scipy_real.dat'
 
 
 

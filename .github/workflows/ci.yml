@@ -57,7 +57,7 @@ jobs:
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install Python packages using pip
-        run: pip install ford fypp scipy
+        run: pip install ford fypp numpy scipy
 
       - name: Generate source (${{ matrix.variant }})
         run: |

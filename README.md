@@ -99,7 +99,7 @@ Pin to a specific release instead of a branch by using its tag (e.g. `tag = "v0.
 `example/demo_p_n_fortran.f90` evaluates `p_n(degree, x)` for every supported degree and real
 kind over $x \in [-1, 1]$, compares each value against [SciPy][scipy]'s
 [`scipy.special.eval_legendre`][scipy-eval-legendre], and writes the results and the error to
-`.dat` files; `example/demo_p_n_gnuplot.gpl` plots both as SVGs with [gnuplot][gnuplot]. This is
+`.dat` files; `example/demo_p_n_real.gpl` plots both as SVGs with [gnuplot][gnuplot]. This is
 for developing and verifying the library itself, so it isn't included in the
 [`default`][branch-default]/[`with_real128`][branch-with-real128] branches — see it, and the
 `.fypp` sources it's generated from, on [`main`][main-example].

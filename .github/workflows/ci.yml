@@ -57,7 +57,7 @@ jobs:
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install Python packages using pip
-        run: pip install ford fypp scipy
+        run: pip install ford fypp numpy scipy
 
       - name: Generate source (${{ matrix.variant }})
         run: |
@@ -71,8 +71,8 @@ jobs:
                example/demo_p_n_fortran.fypp \
                example/demo_p_n.f90
           fypp ${{ matrix.fypp_args }} \
-               example/demo_p_n_gnuplot.fypp \
-               example/demo_p_n.gpl
+               example/demo_p_n_gnuplot_real.fypp \
+               example/demo_p_n_real.gpl
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |
@@ -80,8 +80,11 @@ jobs:
                reference/scipy.fypp \
                reference/scipy.dat
           fypp ${{ matrix.fypp_args }} -F -m scipy.special \
-               example/scipy.fypp \
-               example/scipy.dat
+               example/scipy_real.fypp \
+               example/scipy_real.dat
+          fypp ${{ matrix.fypp_args }} -F -m math -m scipy.special \
+               example/scipy_complex.fypp \
+               example/scipy_complex.dat
 
       - name: Run tests (debug)
         run: fpm test --profile debug
@@ -123,7 +126,7 @@ jobs:
         run: |
           sudo apt install -y gnuplot
           gnuplot --version
-          gnuplot example/demo_p_n.gpl
+          gnuplot example/demo_p_n_real.gpl
 
       - name: Upload example outputs as artifact
         uses: actions/upload-artifact@v7

@@ -4,8 +4,8 @@
 
 #:set PROGRAM_NAME = 'demo_p_n'
 
-#:def GENERATE_SUBROUTINE_NAME(real_kind)
-${PROGRAM_NAME}$_real${str(real_kind)}$
+#:def GENERATE_SUBROUTINE_NAME(data_type, real_kind)
+${PROGRAM_NAME}$_${data_type}$${str(real_kind)}$
 #:enddef GENERATE_SUBROUTINE_NAME
 
 #:endmute
@@ -27,13 +27,17 @@ program ${PROGRAM_NAME}$
   integer(int32), parameter :: minval_degree = 0
 
   integer(int32), parameter :: maxval_degree_interface = ${MAXVAL_DEGREE_INTERFACE}$
+  #:for DATA_TYPE in DATA_TYPES
 
-  character(*), parameter :: ref_file = 'example/scipy.dat'
+  character(*), parameter :: ref_file_${DATA_TYPE}$ = 'example/scipy_${DATA_TYPE}$.dat'
+  #:endfor
 
 
+  #:for DATA_TYPE in DATA_TYPES
 
   #:for REAL_KIND in REAL_KINDS
-  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  call ${GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)}$()
+  #:endfor
   #:endfor
 
   print *, 'Finish: ${PROGRAM_NAME}$'
@@ -42,10 +46,11 @@ program ${PROGRAM_NAME}$
 
   contains
 
+  #:for DATA_TYPE in DATA_TYPES
 
   #:for REAL_KIND in REAL_KINDS
 
-  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$
 
     integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
@@ -62,21 +67,21 @@ program ${PROGRAM_NAME}$
 
     integer :: ref_unit, save_unit_actual, save_unit_error
 
-    real(real${REAL_KIND}$) :: x
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: x
 
-    real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree)
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree)
 
-    real(real${REAL_KIND}$) :: error_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree)
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: error_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree)
 
-    real(real${REAL_KIND}$) :: scipy_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree_interface)
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: scipy_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree_interface)
 
 
     open( &!
-      newunit = ref_unit    , &!
-      file    = ref_file    , &!
-      action  = 'read'      , &!
-      form    = 'formatted' , &!
-      status  = 'old'         &!
+      newunit = ref_unit, &!
+      file    = ref_file_${DATA_TYPE}$, &!
+      action  = 'read', &!
+      form    = 'formatted', &!
+      status  = 'old' &!
     )
 
     open( &!
@@ -98,7 +103,11 @@ program ${PROGRAM_NAME}$
 
     do
 
+      #:if DATA_TYPE == 'complex'
+      read(unit=ref_unit, fmt=*, iostat=iostat) x%re, x%im, scipy_${P_N_SELECTABLE_INTERFACE}$(:)%re, scipy_${P_N_SELECTABLE_INTERFACE}$(:)%im
+      #:elif DATA_TYPE == 'real'
       read(unit=ref_unit, fmt=*, iostat=iostat) x, scipy_${P_N_SELECTABLE_INTERFACE}$(:)
+      #:endif
 
       if (iostat /= 0) exit
 
@@ -110,8 +119,13 @@ program ${PROGRAM_NAME}$
       scipy_${P_N_SELECTABLE_INTERFACE}$  (minval_degree:maxval_degree)
 
 
+      #:if DATA_TYPE == 'complex'
+      write( save_unit_actual , * ) x%re, x%im, abs( actual_${P_N_SELECTABLE_INTERFACE}$ (:) )
+      write( save_unit_error  , * ) x%re, x%im, abs( error_${P_N_SELECTABLE_INTERFACE}$  (:) )
+      #:elif DATA_TYPE == 'real'
       write( save_unit_actual , * ) x, actual_${P_N_SELECTABLE_INTERFACE}$ (:)
       write( save_unit_error  , * ) x, error_${P_N_SELECTABLE_INTERFACE}$  (:)
+      #:endif
 
     end do
 
@@ -123,4 +137,7 @@ program ${PROGRAM_NAME}$
   end subroutine ${SUBROUTINE_NAME}$
 
   #:endfor
+  #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 end program ${PROGRAM_NAME}$

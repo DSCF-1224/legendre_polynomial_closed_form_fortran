@@ -31,7 +31,9 @@ range for each kind follows from that requirement:
 | `real128`  | 0 – 30       | only in the `with_real128` branch (see below) |
 
 `real128` support — and with it, degrees 28–30 — is available only in the `with_real128`
-branch. `real32` and `real64` have the same degree range in either branch.
+branch. `real32` and `real64` have the same degree range in either branch. Each `realXX`
+range also applies to `complex(realXX)`: the coefficients are shared, so the degree limit
+depends only on the kind, not on whether the argument is real or complex.
 
 ## Usage
 
@@ -61,11 +63,24 @@ x = 0.5_real64
 y = p_n(degree, x)   ! same value as p_05(x)
 ```
 
+Both `p_NN` and `p_n` also accept `complex(realXX)`, resolved via the same generic interfaces:
+
+```fortran
+use legendre_polynomial_closed_form_fortran, only: p_05
+
+complex(real64) :: z, w
+
+z = cmplx(0.3_real64, 0.4_real64, real64)
+w = p_05(z)   ! P_5(0.3 + 0.4i)
+```
+
 ## Precision
 
 Evaluation at $x = -1$, $0$, and $1$ is exact — no rounding error — for every supported degree
 and real kind. Away from these points, cancellation among the coefficients grows with degree,
-and the resulting relative error grows accordingly.
+and the resulting relative error grows accordingly. For `complex` arguments, each multiplication
+involves more floating-point operations than the `real` case, so precision may degrade somewhat
+faster with degree.
 
 ## Installation
 
@@ -84,13 +99,26 @@ Pin to a specific release instead of a branch by using its tag (e.g. `tag = "v0.
 `example/demo_p_n_fortran.f90` evaluates `p_n(degree, x)` for every supported degree and real
 kind over $x \in [-1, 1]$, compares each value against [SciPy][scipy]'s
 [`scipy.special.eval_legendre`][scipy-eval-legendre], and writes the results and the error to
-`.dat` files; `example/demo_p_n_gnuplot.gpl` plots both as SVGs with [gnuplot][gnuplot]. This is
+`.dat` files; `example/demo_p_n_real.gpl` plots both as SVGs with [gnuplot][gnuplot]. This is
 for developing and verifying the library itself, so it isn't included in the
 [`default`][branch-default]/[`with_real128`][branch-with-real128] branches — see it, and the
 `.fypp` sources it's generated from, on [`main`][main-example].
 
+### A note on the complex-valued scipy comparison
+
+[`example/`][main-example] compares this library's complex-valued evaluation against
+`scipy.special.eval_legendre`. For higher degrees, the discrepancy between the two can
+become large. This repository has not determined whether such discrepancies reflect
+this library's own precision or the reference value's.
+
+For context: [`scipy.special.eval_legendre`][scipy-eval-legendre] evaluates its result
+via the Gauss hypergeometric function ${}_2F_1(-n,\ n+1;\ 1;\ (1-x)/2)$ rather than a
+three-term recurrence (see [`orthogonal_eval.pxd`][scipy-orthogonal-eval-pxd]). This
+fact alone is not used here to draw a conclusion about where the discrepancy originates.
+
 [scipy]: https://scipy.org/
 [scipy-eval-legendre]: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.eval_legendre.html
+[scipy-orthogonal-eval-pxd]: https://github.com/scipy/scipy/blob/v1.18.1/scipy/special/orthogonal_eval.pxd
 [gnuplot]: http://www.gnuplot.info/
 [main-example]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/main/example
 

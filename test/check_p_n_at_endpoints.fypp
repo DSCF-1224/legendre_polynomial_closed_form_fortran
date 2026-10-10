@@ -4,8 +4,8 @@
 
 #:set PROGRAM_NAME = 'check_p_n_at_endpoints'
 
-#:def GENERATE_SUBROUTINE_NAME(real_kind)
-${PROGRAM_NAME}$_real${str(real_kind)}$
+#:def GENERATE_SUBROUTINE_NAME(data_type, real_kind)
+${PROGRAM_NAME}$_${data_type}$${str(real_kind)}$
 #:enddef GENERATE_SUBROUTINE_NAME
 
 #:endmute
@@ -31,13 +31,25 @@ program ${PROGRAM_NAME}$
 
 
   integer(int32), parameter :: minval_degree = 0
+  #:for DATA_TYPE in DATA_TYPES
+
+  #:for REAL_KIND in REAL_KINDS
+  #:if DATA_TYPE == 'complex'
+  ${DATA_TYPE}$(real${REAL_KIND}$), parameter :: one_${DATA_TYPE}$${REAL_KIND}$ = cmplx(1.0_real${REAL_KIND}$, 0.0_real${REAL_KIND}$, real${REAL_KIND}$)
+  #:elif DATA_TYPE == 'real'
+  ${DATA_TYPE}$(real${REAL_KIND}$), parameter :: one_${DATA_TYPE}$${REAL_KIND}$ = 1.0_real${REAL_KIND}$
+  #:endif
+  #:endfor
+  #:endfor
 
 
 
   call ieee_set_halting_mode(ieee_inexact, .true.)
+  #:for DATA_TYPE in DATA_TYPES
 
   #:for REAL_KIND in REAL_KINDS
-  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  call ${GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)}$()
+  #:endfor
   #:endfor
 
   print *, 'OK: ${PROGRAM_NAME}$'
@@ -47,9 +59,10 @@ program ${PROGRAM_NAME}$
   contains
 
 
+  #:for DATA_TYPE in DATA_TYPES
   #:for REAL_KIND in REAL_KINDS
 
-  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$()
 
     integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
@@ -57,48 +70,44 @@ program ${PROGRAM_NAME}$
 
     integer :: degree
 
-    real(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: actual_${P_N_SELECTABLE_INTERFACE}$
 
 
     plus_one: do degree = minval_degree, maxval_degree
 
-      actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, 1.0_real${REAL_KIND}$)
+      actual_${P_N_SELECTABLE_INTERFACE}$ = ${P_N_SELECTABLE_INTERFACE}$(degree, one_${DATA_TYPE}$${REAL_KIND}$)
 
-      if ( .not. is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, 1.0_real${REAL_KIND}$) ) then
+      if ( is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, one_${DATA_TYPE}$${REAL_KIND}$) ) cycle
 
-        write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=1.0) was'
-        write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
-        write( error_unit, '(A,I0,A)'                  ) 'p_{', degree, '} (x=1.0) must be +1.'
+      write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=1.0) was'
+      write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
+      write( error_unit, *                           ) 'p_{', degree, '} (x=1.0) must be', one_${DATA_TYPE}$${REAL_KIND}$
 
-        error stop
-
-      end if
+      error stop
 
     end do plus_one
 
 
     minus_one: block
 
-      integer :: expected_${P_N_SELECTABLE_INTERFACE}$
+      ${DATA_TYPE}$(real${REAL_KIND}$) :: expected_${P_N_SELECTABLE_INTERFACE}$
 
 
-      expected_${P_N_SELECTABLE_INTERFACE}$ = -1 ! initialization (the minval_degree must be even)
+      expected_${P_N_SELECTABLE_INTERFACE}$ = - one_${DATA_TYPE}$${REAL_KIND}$ ! initialization (the minval_degree must be even)
 
 
       do degree = minval_degree, maxval_degree
 
         expected_${P_N_SELECTABLE_INTERFACE}$ = - expected_${P_N_SELECTABLE_INTERFACE}$
-        actual_${P_N_SELECTABLE_INTERFACE}$   = ${P_N_SELECTABLE_INTERFACE}$(degree, -1.0_real${REAL_KIND}$)
+        actual_${P_N_SELECTABLE_INTERFACE}$   = ${P_N_SELECTABLE_INTERFACE}$( degree, (- one_${DATA_TYPE}$${REAL_KIND}$) )
 
-        if ( .not. is_equal( actual_${P_N_SELECTABLE_INTERFACE}$, real(expected_${P_N_SELECTABLE_INTERFACE}$, real${REAL_KIND}$) ) ) then
+        if ( is_equal(actual_${P_N_SELECTABLE_INTERFACE}$, expected_${P_N_SELECTABLE_INTERFACE}$) ) cycle
 
-          write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
-          write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
-          write( error_unit, '(A,I0,A,1X,I0)'            ) 'p_{', degree, '} (x=-1.0) must be', expected_${P_N_SELECTABLE_INTERFACE}$
+        write( error_unit, '(A,I0,A,1X)', advance='no' ) 'p_{', degree, '} (x=-1.0) was'
+        write( error_unit, *                           ) actual_${P_N_SELECTABLE_INTERFACE}$
+        write( error_unit, *                           ) 'p_{', degree, '} (x=-1.0) must be', expected_${P_N_SELECTABLE_INTERFACE}$
 
-          error stop
-
-        end if
+        error stop
 
       end do
 
@@ -109,4 +118,6 @@ program ${PROGRAM_NAME}$
 
   #:endfor
   #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
 end program ${PROGRAM_NAME}$

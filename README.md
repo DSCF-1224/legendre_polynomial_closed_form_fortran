@@ -104,8 +104,21 @@ for developing and verifying the library itself, so it isn't included in the
 [`default`][branch-default]/[`with_real128`][branch-with-real128] branches — see it, and the
 `.fypp` sources it's generated from, on [`main`][main-example].
 
+### A note on the complex-valued scipy comparison
+
+[`example/`][main-example] compares this library's complex-valued evaluation against
+`scipy.special.eval_legendre`. For higher degrees, the discrepancy between the two can
+become large. This repository has not determined whether such discrepancies reflect
+this library's own precision or the reference value's.
+
+For context: [`scipy.special.eval_legendre`][scipy-eval-legendre] evaluates its result
+via the Gauss hypergeometric function ${}_2F_1(-n,\ n+1;\ 1;\ (1-x)/2)$ rather than a
+three-term recurrence (see [`orthogonal_eval.pxd`][scipy-orthogonal-eval-pxd]). This
+fact alone is not used here to draw a conclusion about where the discrepancy originates.
+
 [scipy]: https://scipy.org/
 [scipy-eval-legendre]: https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.eval_legendre.html
+[scipy-orthogonal-eval-pxd]: https://github.com/scipy/scipy/blob/v1.18.1/scipy/special/orthogonal_eval.pxd
 [gnuplot]: http://www.gnuplot.info/
 [main-example]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/main/example
 

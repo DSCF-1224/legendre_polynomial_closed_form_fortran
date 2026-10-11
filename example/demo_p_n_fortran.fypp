@@ -27,10 +27,9 @@ program ${PROGRAM_NAME}$
   integer(int32), parameter :: minval_degree = 0
 
   integer(int32), parameter :: maxval_degree_interface = ${MAXVAL_DEGREE_INTERFACE}$
-  #:for DATA_TYPE in DATA_TYPES
 
-  character(*), parameter :: ref_file_${DATA_TYPE}$ = 'example/scipy_${DATA_TYPE}$.dat'
-  #:endfor
+  character(*), parameter :: ref_file_complex = 'example/mpmath_complex.dat'
+  character(*), parameter :: ref_file_real    = 'example/scipy_real.dat'
 
 
   #:for DATA_TYPE in DATA_TYPES
@@ -73,7 +72,7 @@ program ${PROGRAM_NAME}$
 
     ${DATA_TYPE}$(real${REAL_KIND}$) :: error_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree)
 
-    ${DATA_TYPE}$(real${REAL_KIND}$) :: scipy_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree_interface)
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: reference_${P_N_SELECTABLE_INTERFACE}$(minval_degree:maxval_degree_interface)
 
 
     open( &!
@@ -104,9 +103,9 @@ program ${PROGRAM_NAME}$
     do
 
       #:if DATA_TYPE == 'complex'
-      read(unit=ref_unit, fmt=*, iostat=iostat) x%re, x%im, scipy_${P_N_SELECTABLE_INTERFACE}$(:)%re, scipy_${P_N_SELECTABLE_INTERFACE}$(:)%im
+      read(unit=ref_unit, fmt=*, iostat=iostat) x%re, x%im, reference_${P_N_SELECTABLE_INTERFACE}$(:)%re, reference_${P_N_SELECTABLE_INTERFACE}$(:)%im
       #:elif DATA_TYPE == 'real'
-      read(unit=ref_unit, fmt=*, iostat=iostat) x, scipy_${P_N_SELECTABLE_INTERFACE}$(:)
+      read(unit=ref_unit, fmt=*, iostat=iostat) x, reference_${P_N_SELECTABLE_INTERFACE}$(:)
       #:endif
 
       if (iostat /= 0) exit
@@ -114,9 +113,9 @@ program ${PROGRAM_NAME}$
 
       actual_${P_N_SELECTABLE_INTERFACE}$(:) = ${P_N_SELECTABLE_INTERFACE}$(list_degree(:), x)
 
-      error_${P_N_SELECTABLE_INTERFACE}$  (minval_degree:maxval_degree) = &!
-      actual_${P_N_SELECTABLE_INTERFACE}$ (minval_degree:maxval_degree) - &!
-      scipy_${P_N_SELECTABLE_INTERFACE}$  (minval_degree:maxval_degree)
+      error_${P_N_SELECTABLE_INTERFACE}$     (minval_degree:maxval_degree) = &!
+      actual_${P_N_SELECTABLE_INTERFACE}$    (minval_degree:maxval_degree) - &!
+      reference_${P_N_SELECTABLE_INTERFACE}$ (minval_degree:maxval_degree)
 
 
       #:if DATA_TYPE == 'complex'

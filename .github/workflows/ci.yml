@@ -82,9 +82,6 @@ jobs:
           fypp ${{ matrix.fypp_args }} -F -m scipy.special \
                example/scipy_real.fypp \
                example/scipy_real.dat
-          fypp ${{ matrix.fypp_args }} -F -m math -m scipy.special \
-               example/scipy_complex.fypp \
-               example/scipy_complex.dat
           fypp ${{ matrix.fypp_args }} \
                example/mpmath_complex.fypp \
                example/mpmath_complex.py

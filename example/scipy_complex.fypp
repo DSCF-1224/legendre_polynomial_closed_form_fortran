@@ -1,4 +1,4 @@
-#! sampling the sample points using Fibonacci spiral
+#! sampling the sample points using Fibonacci spiral evaluated via SciPy
 #:include '../src/common.fypp'
 #:set NUM_POINTS = 2048
 #:set GOLDEN_ANGLE = math.pi * (3 - math.sqrt(5))

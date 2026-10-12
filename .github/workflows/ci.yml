@@ -79,6 +79,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m scipy.special \
                reference/scipy.fypp \
                reference/scipy.dat
+          fypp ${{ matrix.fypp_args }} -m scipy.special \
+               reference/scipy_prime.fypp \
+               reference/scipy_prime.dat
           fypp ${{ matrix.fypp_args }} -F -m scipy.special \
                example/scipy_real.fypp \
                example/scipy_real.dat

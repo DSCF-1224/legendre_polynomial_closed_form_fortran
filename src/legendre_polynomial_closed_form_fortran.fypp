@@ -193,56 +193,6 @@ module ${MODULE_NAME}$
 
   #! REAL_KIND
 
-  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64_PRIME + 1) )
-
-  #:for DATA_TYPE in DATA_TYPES
-  #:for REAL_KIND in REAL_KINDS
-
-  #:if CHECK_REAL_KIND_PRIME(REAL_KIND, DEGREE)
-  #:set FUNCTION_NAME = P_N_PRIME_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)
-  ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
-    !! version: experimental
-    !! \( P_{${DEGREE}$}' (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
-
-    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
-
-    #:if DEGREE == 0
-    ${FUNCTION_NAME}$ = real(0, kind=kind(x))
-    #:elif DEGREE == 1
-    ${FUNCTION_NAME}$ = real(1, kind=kind(x))
-    #:elif DEGREE == 2
-    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, 0)}$ * x / ${DENOMINATOR_NAME(DEGREE)}$
-    #:elif DEGREE == 3
-    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME_PRIME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME_PRIME(DEGREE, 1)}$) / ${DENOMINATOR_NAME(DEGREE)}$
-    #:else
-
-    ${DATA_TYPE}$(real${REAL_KIND}$) :: x2
-
-
-    x2 = x * x
-
-    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, 1)}$ + x2 * ${NUMERATOR_NAME_PRIME(DEGREE, 0)}$
-    #:for J in range( 2, ( (DEGREE + 1) // 2 ) )
-    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, J)}$ + x2 * ${FUNCTION_NAME}$
-    #:endfor
-
-    ${FUNCTION_NAME}$ = ${FUNCTION_NAME}$#{if DEGREE % 2 == 0}# * x#{endif}# / ${DENOMINATOR_NAME(DEGREE)}$
-    #:endif
-
-  end function ${FUNCTION_NAME}$
-  #:del FUNCTION_NAME
-  #:endif
-
-  #:endfor
-  #! REAL_KIND
-  #:endfor
-  #! DATA_TYPE
-
-  #:endfor
-  #! DEGREE
-
-  #! REAL_KIND
-
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
 
   #:for DATA_TYPE in DATA_TYPES
@@ -277,6 +227,53 @@ module ${MODULE_NAME}$
     #:endfor
 
     ${FUNCTION_NAME}$ = ${FUNCTION_NAME}$#{if DEGREE % 2 != 0}# * x#{endif}# / ${DENOMINATOR_NAME(DEGREE)}$
+    #:endif
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+  #:endif
+
+  #:endfor
+  #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
+
+  #:endfor
+  #! DEGREE
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64_PRIME + 1) )
+
+  #:for DATA_TYPE in DATA_TYPES
+  #:for REAL_KIND in REAL_KINDS
+
+  #:if CHECK_REAL_KIND_PRIME(REAL_KIND, DEGREE)
+  #:set FUNCTION_NAME = P_N_PRIME_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)
+  ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+    !! version: experimental
+    !! \( P_{${DEGREE}$}' (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
+
+    #:if DEGREE == 0
+    ${FUNCTION_NAME}$ = real(0, kind=kind(x))
+    #:elif DEGREE == 1
+    ${FUNCTION_NAME}$ = real(1, kind=kind(x))
+    #:elif DEGREE == 2
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, 0)}$ * x / ${DENOMINATOR_NAME(DEGREE)}$
+    #:elif DEGREE == 3
+    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME_PRIME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME_PRIME(DEGREE, 1)}$) / ${DENOMINATOR_NAME(DEGREE)}$
+    #:else
+
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: x2
+
+
+    x2 = x * x
+
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, 1)}$ + x2 * ${NUMERATOR_NAME_PRIME(DEGREE, 0)}$
+    #:for J in range( 2, ( (DEGREE + 1) // 2 ) )
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, J)}$ + x2 * ${FUNCTION_NAME}$
+    #:endfor
+
+    ${FUNCTION_NAME}$ = ${FUNCTION_NAME}$#{if DEGREE % 2 == 0}# * x#{endif}# / ${DENOMINATOR_NAME(DEGREE)}$
     #:endif
 
   end function ${FUNCTION_NAME}$

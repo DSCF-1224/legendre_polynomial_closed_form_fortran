@@ -73,6 +73,7 @@ module ${MODULE_NAME}$
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE_PRIME + 1) )
   public :: ${P_N_PRIME_INTERFACE(DEGREE)}$
   #:endfor
+  public :: ${P_N_SELECTABLE_PRIME_INTERFACE}$
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
@@ -188,11 +189,31 @@ module ${MODULE_NAME}$
   #:endfor
   #! DEGREE
 
+  !> version: experimental
+  !! $$
+  !! P'_n (x) \ ( n = 0 , 1, \dots , N ),\ 
+  !! N =
+  !! \begin{cases}
+  #:if defined("WITH_REAL128")
+  !! ${MAXVAL_DEGREE_REAL_PRIME( 32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL_PRIME( 64)}$ & \text{for real64} \\
+  !! ${MAXVAL_DEGREE_REAL_PRIME(128)}$ & \text{for real128}
+  #:else
+  !! ${MAXVAL_DEGREE_REAL_PRIME(32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL_PRIME(64)}$ & \text{for real64}
+  #:endif
+  !! \end{cases}
+  !! $$
+  interface ${P_N_SELECTABLE_PRIME_INTERFACE}$
+    #:for DATA_TYPE in DATA_TYPES
+    #:for REAL_KIND in REAL_KINDS
+    module procedure ${P_N_SELECTABLE_PRIME_FUNCTION(DATA_TYPE, REAL_KIND)}$
+    #:endfor
+    #:endfor
+  end interface ${P_N_SELECTABLE_PRIME_INTERFACE}$
+
 
   contains
-
-  #! REAL_KIND
-
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64 + 1) )
 
   #:for DATA_TYPE in DATA_TYPES
@@ -305,6 +326,50 @@ module ${MODULE_NAME}$
 
       #:for DEGREE in range(0, MAXVAL_DEGREE_REAL(REAL_KIND) + 1)
       case ( ${str(DEGREE).rjust(2)}$_int32 ); ${FUNCTION_NAME}$ = ${P_N_INTERFACE(DEGREE)}$(x)
+      #:endfor
+
+      #:if DATA_TYPE == 'complex'
+      case default
+      block
+
+          real(real${REAL_KIND}$) :: tmp
+
+          ${"tmp".ljust(len(FUNCTION_NAME))}$ = ieee_value(real(x), ieee_signaling_nan)
+          ${FUNCTION_NAME}$ = cmplx(tmp, tmp, real${REAL_KIND}$)
+
+      end block
+      #:elif DATA_TYPE == 'real'
+      case default; ${FUNCTION_NAME}$ = ieee_value(x, ieee_signaling_nan)
+      #:endif
+
+    end select
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+  #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
+
+
+  #:for DATA_TYPE in DATA_TYPES
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = P_N_SELECTABLE_PRIME_FUNCTION(DATA_TYPE, REAL_KIND)
+  ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
+    !! version: experimental
+    !! \( P'_n (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$ ) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+
+    integer(int32), intent(in) :: degree
+
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
+
+
+    select case (degree)
+
+      #:for DEGREE in range(0, MAXVAL_DEGREE_REAL_PRIME(REAL_KIND) + 1)
+      case ( ${str(DEGREE).rjust(2)}$_int32 ); ${FUNCTION_NAME}$ = ${P_N_PRIME_INTERFACE(DEGREE)}$(x)
       #:endfor
 
       #:if DATA_TYPE == 'complex'

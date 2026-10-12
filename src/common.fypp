@@ -61,8 +61,14 @@ p_${str(degree).zfill(2)}$_prime
 
 #:set P_N_SELECTABLE_INTERFACE = 'p_n'
 
+#:set P_N_SELECTABLE_PRIME_INTERFACE = 'p_n_prime'
+
 #:def P_N_SELECTABLE_FUNCTION(data_type, real_kind)
 ${P_N_SELECTABLE_INTERFACE}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_SELECTABLE_FUNCTION
+
+#:def P_N_SELECTABLE_PRIME_FUNCTION(data_type, real_kind)
+${P_N_SELECTABLE_PRIME_INTERFACE}$_${data_type}$${str(real_kind)}$
+#:enddef P_N_SELECTABLE_PRIME_FUNCTION
 
 #:endmute

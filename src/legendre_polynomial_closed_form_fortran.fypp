@@ -15,9 +15,18 @@ ${2 ** degree}$
 numerator_deg${str(degree).zfill(2)}$_pow${str(degree - 2 * j).zfill(2)}$
 #:enddef NUMERATOR_NAME
 
+#:def NUMERATOR_NAME_PRIME(degree, j)
+#:assert degree > (2 * j)
+numerator_deg${str(degree).zfill(2)}$_prime_pow${str(degree - 2 * j - 1).zfill(2)}$
+#:enddef NUMERATOR_NAME_PRIME
+
 #:def NUMERATOR_VALUE(degree, j)
 ${(-1)**j * math.comb(degree, j) * math.comb( ( 2 * (degree - j) ), degree )}$
 #:enddef NUMERATOR_VALUE
+
+#:def NUMERATOR_VALUE_PRIME(degree, j)
+${int(NUMERATOR_VALUE(degree, j)) * (degree - 2 * j)}$
+#:enddef NUMERATOR_VALUE_PRIME
 
 #:def P_N_FUNCTION(degree, data_type, real_kind)
 ${P_N_INTERFACE(degree)}$_${data_type}$${str(real_kind)}$
@@ -68,6 +77,16 @@ module ${MODULE_NAME}$
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
   #:for J in range( 0, (DEGREE//2 + 1) )
   integer(int${NUMERATOR_INT_KIND(DEGREE)}$), parameter :: ${NUMERATOR_NAME(DEGREE, J)}$ = ${NUMERATOR_VALUE(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J}$} \) of \( P_{${DEGREE}$} (x) \)
+  #:endfor
+
+  #:endfor
+  #! DEGREE
+
+
+
+  #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64_PRIME + 1) )
+  #:for J in range( 0, ( (DEGREE + 1) // 2 ) )
+  integer(int${NUMERATOR_INT_KIND_PRIME(DEGREE)}$), parameter :: ${NUMERATOR_NAME_PRIME(DEGREE, J)}$ = ${NUMERATOR_VALUE_PRIME(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND_PRIME(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J - 1}$} \) of \( P_{${DEGREE}$}' (x) \)
   #:endfor
 
   #:endfor

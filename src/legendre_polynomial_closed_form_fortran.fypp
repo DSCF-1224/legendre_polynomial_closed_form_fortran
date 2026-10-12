@@ -66,14 +66,9 @@ module ${MODULE_NAME}$
   private
 
   #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE + 1) )
-  public :: ${P_N_INTERFACE(DEGREE)}$
+  public :: ${P_N_INTERFACE(DEGREE)}$#{if DEGREE <= MAXVAL_DEGREE_INTERFACE_PRIME}#, ${P_N_PRIME_INTERFACE(DEGREE)}$#{endif}#
   #:endfor
-  public :: ${P_N_SELECTABLE_INTERFACE}$
-
-  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE_PRIME + 1) )
-  public :: ${P_N_PRIME_INTERFACE(DEGREE)}$
-  #:endfor
-  public :: ${P_N_SELECTABLE_PRIME_INTERFACE}$
+  public :: ${P_N_SELECTABLE_INTERFACE}$, ${P_N_SELECTABLE_PRIME_INTERFACE}$
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )

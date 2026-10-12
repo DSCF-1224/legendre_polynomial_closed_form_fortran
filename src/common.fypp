@@ -55,6 +55,10 @@
 p_${str(degree).zfill(2)}$
 #:enddef P_N_INTERFACE
 
+#:def P_N_PRIME_INTERFACE(degree)
+p_${str(degree).zfill(2)}$_prime
+#:enddef P_N_PRIME_INTERFACE
+
 #:set P_N_SELECTABLE_INTERFACE = 'p_n'
 
 #:def P_N_SELECTABLE_FUNCTION(data_type, real_kind)

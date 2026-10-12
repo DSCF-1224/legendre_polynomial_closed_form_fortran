@@ -32,6 +32,10 @@ ${int(NUMERATOR_VALUE(degree, j)) * (degree - 2 * j)}$
 ${P_N_INTERFACE(degree)}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_FUNCTION
 
+#:def P_N_PRIME_FUNCTION(degree, data_type, real_kind)
+${P_N_PRIME_INTERFACE(degree)}$_${data_type}$${str(real_kind)}$
+#:enddef P_N_PRIME_FUNCTION
+
 #:endmute
 module ${MODULE_NAME}$
   !! Legendre polynomial evaluation for Fortran, via the closed-form expression.
@@ -66,6 +70,9 @@ module ${MODULE_NAME}$
   #:endfor
   public :: ${P_N_SELECTABLE_INTERFACE}$
 
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE_PRIME + 1) )
+  public :: ${P_N_PRIME_INTERFACE(DEGREE)}$
+  #:endfor
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
@@ -148,8 +155,91 @@ module ${MODULE_NAME}$
     #:endfor
   end interface ${P_N_SELECTABLE_INTERFACE}$
 
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64_PRIME + 1) )
+
+  !> version: experimental
+  #:if defined("WITH_REAL128")
+  #:if DEGREE <= MAXVAL_DEGREE_REAL32_PRIME
+  !! \( P_{${DEGREE}$}' (x) \) for `real32`, `real64` and `real128`
+  #:elif DEGREE <= MAXVAL_DEGREE_REAL64_PRIME
+  !! \( P_{${DEGREE}$}' (x) \) for `real64` and `real128`
+  #:else
+  !! \( P_{${DEGREE}$}' (x) \) for `real128` only
+  #:endif
+  #:else
+  #:if DEGREE <= MAXVAL_DEGREE_REAL32_PRIME
+  !! \( P_{${DEGREE}$}' (x) \) for `real32` and `real64`
+  #:elif DEGREE <= MAXVAL_DEGREE_REAL64_PRIME
+  !! \( P_{${DEGREE}$}' (x) \) for `real64` only
+  #:endif
+  #:endif
+  #:set INTERFACE_NAME = P_N_PRIME_INTERFACE(DEGREE)
+  interface ${INTERFACE_NAME}$
+    #:for DATA_TYPE in DATA_TYPES
+    #:for REAL_KIND in REAL_KINDS
+    #:if CHECK_REAL_KIND_PRIME(REAL_KIND, DEGREE)
+    module procedure ${P_N_PRIME_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)}$
+    #:endif
+    #:endfor
+    #:endfor
+  end interface ${INTERFACE_NAME}$
+  #:del INTERFACE_NAME
+
+  #:endfor
+  #! DEGREE
+
 
   contains
+
+  #! REAL_KIND
+
+  #:for DEGREE in range( 0, (MAXVAL_DEGREE_INT64_PRIME + 1) )
+
+  #:for DATA_TYPE in DATA_TYPES
+  #:for REAL_KIND in REAL_KINDS
+
+  #:if CHECK_REAL_KIND_PRIME(REAL_KIND, DEGREE)
+  #:set FUNCTION_NAME = P_N_PRIME_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)
+  ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
+    !! version: experimental
+    !! \( P_{${DEGREE}$}' (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+
+    ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
+
+    #:if DEGREE == 0
+    ${FUNCTION_NAME}$ = real(0, kind=kind(x))
+    #:elif DEGREE == 1
+    ${FUNCTION_NAME}$ = real(1, kind=kind(x))
+    #:elif DEGREE == 2
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, 0)}$ * x / ${DENOMINATOR_NAME(DEGREE)}$
+    #:elif DEGREE == 3
+    ${FUNCTION_NAME}$ = (${NUMERATOR_NAME_PRIME(DEGREE, 0)}$ * x * x + ${NUMERATOR_NAME_PRIME(DEGREE, 1)}$) / ${DENOMINATOR_NAME(DEGREE)}$
+    #:else
+
+    ${DATA_TYPE}$(real${REAL_KIND}$) :: x2
+
+
+    x2 = x * x
+
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, 1)}$ + x2 * ${NUMERATOR_NAME_PRIME(DEGREE, 0)}$
+    #:for J in range( 2, ( (DEGREE + 1) // 2 ) )
+    ${FUNCTION_NAME}$ = ${NUMERATOR_NAME_PRIME(DEGREE, J)}$ + x2 * ${FUNCTION_NAME}$
+    #:endfor
+
+    ${FUNCTION_NAME}$ = ${FUNCTION_NAME}$#{if DEGREE % 2 == 0}# * x#{endif}# / ${DENOMINATOR_NAME(DEGREE)}$
+    #:endif
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+  #:endif
+
+  #:endfor
+  #! REAL_KIND
+  #:endfor
+  #! DATA_TYPE
+
+  #:endfor
+  #! DEGREE
 
   #! REAL_KIND
 

@@ -91,8 +91,13 @@ jobs:
           fypp ${{ matrix.fypp_args }} \
                example/mpmath_complex.fypp \
                example/mpmath_complex.py
+          fypp ${{ matrix.fypp_args }} \
+               example/mpmath_complex_prime.fypp \
+               example/mpmath_complex_prime.py
           python3 example/mpmath_complex.py \
                 > example/mpmath_complex.dat
+          python3 example/mpmath_complex_prime.py \
+                > example/mpmath_complex_prime.dat
 
       - name: Run tests (debug)
         run: fpm test --profile debug

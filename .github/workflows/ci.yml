@@ -76,6 +76,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_gnuplot_real.fypp \
                example/demo_p_n_real.gpl
+          fypp ${{ matrix.fypp_args }} \
+               example/demo_p_n_prime_gnuplot_real.fypp \
+               example/demo_p_n_prime_real.gpl
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |
@@ -143,6 +146,7 @@ jobs:
           sudo apt install -y gnuplot
           gnuplot --version
           gnuplot example/demo_p_n_real.gpl
+          gnuplot example/demo_p_n_prime_real.gpl
 
       - name: Upload example outputs as artifact
         uses: actions/upload-artifact@v7

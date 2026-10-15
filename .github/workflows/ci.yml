@@ -70,23 +70,40 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m math \
                example/demo_p_n_fortran.fypp \
                example/demo_p_n.f90
+          fypp ${{ matrix.fypp_args }} -m math \
+               example/demo_p_n_prime_fortran.fypp \
+               example/demo_p_n_prime.f90
           fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_gnuplot_real.fypp \
                example/demo_p_n_real.gpl
+          fypp ${{ matrix.fypp_args }} \
+               example/demo_p_n_prime_gnuplot_real.fypp \
+               example/demo_p_n_prime_real.gpl
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |
           fypp ${{ matrix.fypp_args }} -m scipy.special \
                reference/scipy.fypp \
                reference/scipy.dat
+          fypp ${{ matrix.fypp_args }} -m scipy.special \
+               reference/scipy_prime.fypp \
+               reference/scipy_prime.dat
           fypp ${{ matrix.fypp_args }} -F -m scipy.special \
                example/scipy_real.fypp \
                example/scipy_real.dat
+          fypp ${{ matrix.fypp_args }} -F -m scipy.special \
+               example/scipy_real_prime.fypp \
+               example/scipy_real_prime.dat
           fypp ${{ matrix.fypp_args }} \
                example/mpmath_complex.fypp \
                example/mpmath_complex.py
+          fypp ${{ matrix.fypp_args }} \
+               example/mpmath_complex_prime.fypp \
+               example/mpmath_complex_prime.py
           python3 example/mpmath_complex.py \
                 > example/mpmath_complex.dat
+          python3 example/mpmath_complex_prime.py \
+                > example/mpmath_complex_prime.dat
 
       - name: Run tests (debug)
         run: fpm test --profile debug
@@ -129,6 +146,7 @@ jobs:
           sudo apt install -y gnuplot
           gnuplot --version
           gnuplot example/demo_p_n_real.gpl
+          gnuplot example/demo_p_n_prime_real.gpl
 
       - name: Upload example outputs as artifact
         uses: actions/upload-artifact@v7

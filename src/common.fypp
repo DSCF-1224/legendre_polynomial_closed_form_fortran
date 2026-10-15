@@ -8,18 +8,28 @@
 #:set MAXVAL_DEGREE_REAL32 = 13
 #:set MAXVAL_DEGREE_REAL64 = 27
 
+#:set MAXVAL_DEGREE_INT32_PRIME  = 14
+#:set MAXVAL_DEGREE_REAL32_PRIME = 12
+#:set MAXVAL_DEGREE_REAL64_PRIME = 25
+
 #:if defined('WITH_REAL128')
-  #:set MAXVAL_DEGREE_INT64 = 30
-  #:set REAL_KINDS          = [32, 64, 128]
+  #:set MAXVAL_DEGREE_INT64       = 30
+  #:set MAXVAL_DEGREE_INT64_PRIME = 28
+  #:set REAL_KINDS                = [32, 64, 128]
 #:else
-  #:set MAXVAL_DEGREE_INT64 = MAXVAL_DEGREE_REAL64
-  #:set REAL_KINDS          = [32, 64]
+  #:set MAXVAL_DEGREE_INT64       = MAXVAL_DEGREE_REAL64
+  #:set MAXVAL_DEGREE_INT64_PRIME = MAXVAL_DEGREE_REAL64_PRIME
+  #:set REAL_KINDS                = [32, 64]
 #:endif
 
-#:set MAXVAL_DEGREE_INTERFACE = MAXVAL_DEGREE_INT64
-#:set MAXVAL_DEGREE_REAL      = lambda real_kind: {32: MAXVAL_DEGREE_REAL32, 64: MAXVAL_DEGREE_REAL64, 128: MAXVAL_DEGREE_INTERFACE}[real_kind]
+#:set MAXVAL_DEGREE_INTERFACE       = MAXVAL_DEGREE_INT64
+#:set MAXVAL_DEGREE_INTERFACE_PRIME = MAXVAL_DEGREE_INT64_PRIME
 
-#:set CHECK_REAL_KIND = lambda real_kind, degree: (real_kind == 32 and degree <= MAXVAL_DEGREE_REAL32) or (real_kind == 64 and degree <= MAXVAL_DEGREE_REAL64) or (real_kind == 128)
+#:set MAXVAL_DEGREE_REAL       = lambda real_kind: { 32: MAXVAL_DEGREE_REAL32       , 64: MAXVAL_DEGREE_REAL64       , 128: MAXVAL_DEGREE_INTERFACE       }[real_kind]
+#:set MAXVAL_DEGREE_REAL_PRIME = lambda real_kind: { 32: MAXVAL_DEGREE_REAL32_PRIME , 64: MAXVAL_DEGREE_REAL64_PRIME , 128: MAXVAL_DEGREE_INTERFACE_PRIME }[real_kind]
+
+#:set CHECK_REAL_KIND       = lambda real_kind, degree: ( real_kind == 32 and degree <= MAXVAL_DEGREE_REAL32       ) or ( real_kind == 64 and degree <= MAXVAL_DEGREE_REAL64       ) or (real_kind == 128)
+#:set CHECK_REAL_KIND_PRIME = lambda real_kind, degree: ( real_kind == 32 and degree <= MAXVAL_DEGREE_REAL32_PRIME ) or ( real_kind == 64 and degree <= MAXVAL_DEGREE_REAL64_PRIME ) or (real_kind == 128)
 
 #:def NUMERATOR_INT_KIND(degree)
 #:if degree <= MAXVAL_DEGREE_INT32
@@ -31,14 +41,34 @@
 #:endif
 #:enddef NUMERATOR_INT_KIND
 
+#:def NUMERATOR_INT_KIND_PRIME(degree)
+#:if degree <= MAXVAL_DEGREE_INT32_PRIME
+32
+#:elif degree <= MAXVAL_DEGREE_INT64_PRIME
+64
+#:else
+#:stop '`degree` must be less than {}.'.format(MAXVAL_DEGREE_INT64_PRIME + 1)
+#:endif
+#:enddef NUMERATOR_INT_KIND_PRIME
+
 #:def P_N_INTERFACE(degree)
 p_${str(degree).zfill(2)}$
 #:enddef P_N_INTERFACE
 
+#:def P_N_PRIME_INTERFACE(degree)
+p_${str(degree).zfill(2)}$_prime
+#:enddef P_N_PRIME_INTERFACE
+
 #:set P_N_SELECTABLE_INTERFACE = 'p_n'
+
+#:set P_N_SELECTABLE_PRIME_INTERFACE = 'p_n_prime'
 
 #:def P_N_SELECTABLE_FUNCTION(data_type, real_kind)
 ${P_N_SELECTABLE_INTERFACE}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_SELECTABLE_FUNCTION
+
+#:def P_N_SELECTABLE_PRIME_FUNCTION(data_type, real_kind)
+${P_N_SELECTABLE_PRIME_INTERFACE}$_${data_type}$${str(real_kind)}$
+#:enddef P_N_SELECTABLE_PRIME_FUNCTION
 
 #:endmute

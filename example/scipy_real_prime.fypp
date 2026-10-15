@@ -1,0 +1,23 @@
+#! The derivative is evaluated with the identity
+#! P_n'(x) = n (P_{n-1}(x) - x P_n(x)) / (1 - x^2)  ( |x| < 1 ),
+#! which needs only scipy.special.eval_legendre.
+#! At x = +1 and x = -1 the identity is indeterminate (0/0),
+#! so the known value P_n'(+-1) = (+-1)^(n+1) n (n + 1) / 2 is written instead.
+#:include '../src/common.fypp'
+#:set NUM_POINTS = 1024
+#:set STEP_X = 1.0 / NUM_POINTS
+#:for RANGE_X in range( (- NUM_POINTS), (NUM_POINTS + 1) )
+#:set X = STEP_X * RANGE_X
+#:set STR = str(X)
+#:for DEGREE in range( 0, (MAXVAL_DEGREE_INTERFACE_PRIME + 1) )
+#:if DEGREE == 0
+#:set VALUE = 0.0
+#:elif abs(X) == 1.0
+#:set VALUE = (X ** (DEGREE + 1)) * DEGREE * (DEGREE + 1) / 2
+#:else
+#:set VALUE = DEGREE * (scipy.special.eval_legendre(DEGREE - 1, X) - X * scipy.special.eval_legendre(DEGREE, X)) / (1.0 - X * X)
+#:endif
+#:set STR = STR + " " + str(VALUE)
+#:endfor
+${STR}$
+#:endfor

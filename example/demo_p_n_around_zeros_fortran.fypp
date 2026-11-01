@@ -2,7 +2,7 @@
 
 #:include '../src/common.fypp'
 
-#:set PROGRAM_NAME = 'demo_p_n_around_roots'
+#:set PROGRAM_NAME = 'demo_p_n_around_zeros'
 
 #:def GENERATE_SUBROUTINE_NAME(real_kind)
 ${PROGRAM_NAME}$_real${str(real_kind)}$

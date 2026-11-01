@@ -77,6 +77,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m math \
                example/demo_p_n_prime_fortran.fypp \
                example/demo_p_n_prime.f90
+          fypp ${{ matrix.fypp_args }} -m math \
+               example/demo_p_n_around_roots_fortran.fypp \
+               example/demo_p_n_around_roots.f90
           fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_gnuplot_real.fypp \
                example/demo_p_n_real.gpl

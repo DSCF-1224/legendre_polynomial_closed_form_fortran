@@ -59,6 +59,10 @@ jobs:
       - name: Install Python packages using pip
         run: pip install ford fypp mpmath numpy scipy
 
+      - name: Select the variant of the dev-dependency (with_real128)
+        if: matrix.variant == 'with_real128'
+        run: sed -i 's/+default"/+with_real128"/' fpm.toml
+
       - name: Generate source (${{ matrix.variant }})
         run: |
           fypp ${{ matrix.fypp_args }} -m math \

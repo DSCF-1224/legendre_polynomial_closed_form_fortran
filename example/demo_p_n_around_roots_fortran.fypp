@@ -46,7 +46,7 @@ program ${PROGRAM_NAME}$
   #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$
 
-    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$
+    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
 
 
     integer(int32) :: degree, itr_point, k

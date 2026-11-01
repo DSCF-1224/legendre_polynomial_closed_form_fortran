@@ -1,0 +1,102 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:set PROGRAM_NAME = 'demo_p_n_around_roots'
+
+#:def GENERATE_SUBROUTINE_NAME(real_kind)
+${PROGRAM_NAME}$_real${str(real_kind)}$
+#:enddef GENERATE_SUBROUTINE_NAME
+
+#:endmute
+program ${PROGRAM_NAME}$
+
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
+
+  use, non_intrinsic :: legendre_polynomial_zero_intervals_fortran
+
+
+
+  implicit none
+
+
+
+  integer(int32), parameter :: minval_degree = 1_int32
+
+  integer(int32), parameter :: num_intervals = 10_int32
+
+
+  #:for REAL_KIND in REAL_KINDS
+  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  #:endfor
+
+  print *, 'Finish: ${PROGRAM_NAME}$'
+
+
+
+  contains
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$
+
+    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$
+
+
+    integer(int32) :: degree, itr_point, k
+
+
+    integer :: save_unit
+
+
+    open( &!
+      newunit = save_unit , &!
+      file    = 'example/${SUBROUTINE_NAME}$.dat' , &!
+      action  = 'write' , &!
+      form    = 'formatted', &!
+      status  = 'unknown' &!
+    )
+
+
+    do degree = minval_degree, maxval_degree
+    block
+
+      real(real${REAL_KIND}$), dimension(degree) :: x_lower, x_upper, step_x, x
+
+
+      call get_zero_interval( &!
+        n       = degree , &!
+        k       = [(k, k = 1_int32, degree)] , &!
+        x_lower = x_lower(:) , &!
+        x_upper = x_upper(:)   &!
+      )
+
+      step_x(:) = ( x_upper(:) - x_lower(:) ) / num_intervals
+
+      do itr_point = 0, num_intervals
+
+        x(:) = x_lower(:) + step_x(:) * itr_point
+
+        write(save_unit, *) x(:), ${P_N_SELECTABLE_INTERFACE}$( degree, x(:) )
+
+      end do
+
+      write(save_unit, *) ! BLANK LINE
+
+    end block
+    end do
+
+
+    close(save_unit)
+
+  end subroutine ${SUBROUTINE_NAME}$
+
+  #:endfor
+  #! REAL_KIND
+end program ${PROGRAM_NAME}$

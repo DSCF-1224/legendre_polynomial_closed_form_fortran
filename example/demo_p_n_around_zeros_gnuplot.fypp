@@ -1,0 +1,38 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:endmute
+reset session
+
+set size square
+set xzeroaxis linetype -1
+set yzeroaxis linetype -1
+set palette model RGB rgbformulae 35,13,10 #rainbow (blue-green-yellow-red)
+set xlabel 'x'
+set ylabel 'P_n(x)'
+set xrange [-1.1:1.1]
+unset colorbox
+
+set terminal svg dynamic
+
+#:for REAL_KIND in REAL_KINDS
+
+do for [degree = 1:${MAXVAL_DEGREE_REAL(REAL_KIND)}$] {
+
+    set title ( 'precision: REAL${REAL_KIND}$; '. sprintf('P_{%d}(x)', degree) )
+
+    set output sprintf("example/demo_p_%2.2d_around_zeros_real${REAL_KIND}$.svg", degree)
+
+    plot for [k=1:degree] \
+         'example/demo_p_n_around_zeros_real${REAL_KIND}$.dat' \
+         using k:( column(degree + k) ) every :::(degree - 1)::(degree - 1) \
+         with linespoints \
+         linewidth 1.0 linecolor palette frac ( real(k) / degree ) \
+         pointtype 7 pointsize 0.25 \
+         notitle
+}
+
+#:endfor
+
+set output

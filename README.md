@@ -155,6 +155,18 @@ from [`example/scipy_real_prime.fypp`][scipy-real-prime-fypp], which uses the sa
 above (at $x = \pm 1$, where it is indeterminate, the known value of $P_n'(\pm 1)$ is used
 instead).
 
+`example/demo_p_n_around_zeros.f90` evaluates `p_n(degree, x)` at equally spaced points in each
+interval returned by `get_zero_interval` of
+[legendre_polynomial_zero_intervals_fortran][zero-intervals], which provides intervals each
+enclosing exactly one zero of the Legendre polynomial, for every supported degree and real
+kind. It writes the results to `.dat` files, and `example/demo_p_n_around_zeros.gpl` plots them
+as SVGs with [gnuplot][gnuplot], one curve per interval.
+
+That library is listed in `fpm.toml` under `[dev-dependencies]` for this example, and is not
+exported with this library: it is removed from the [`default`][branch-default]/
+[`with_real128`][branch-with-real128] branches. `fpm.toml` pins its `default` variant by tag;
+to build the example with `real128`, change the tag to its `with_real128` counterpart.
+
 ### A note on the complex-valued reference comparison
 
 [`example/`][main-example] compares this library's complex-valued evaluation against a
@@ -188,6 +200,7 @@ error is no longer visible at the requested output precision, not a certified bo
 [gnuplot]: http://www.gnuplot.info/
 [main-example]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/main/example
 [main-test]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/main/test
+[zero-intervals]: https://github.com/DSCF-1224/legendre_polynomial_zero_intervals_fortran
 
 ## License
 

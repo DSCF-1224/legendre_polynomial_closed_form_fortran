@@ -59,6 +59,10 @@ jobs:
       - name: Install Python packages using pip
         run: pip install ford fypp mpmath numpy scipy
 
+      - name: Select the variant of the dev-dependency (with_real128)
+        if: matrix.variant == 'with_real128'
+        run: sed -i 's/+default"/+with_real128"/' fpm.toml
+
       - name: Generate source (${{ matrix.variant }})
         run: |
           fypp ${{ matrix.fypp_args }} -m math \
@@ -73,12 +77,18 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m math \
                example/demo_p_n_prime_fortran.fypp \
                example/demo_p_n_prime.f90
+          fypp ${{ matrix.fypp_args }} -m math \
+               example/demo_p_n_around_zeros_fortran.fypp \
+               example/demo_p_n_around_zeros.f90
           fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_gnuplot_real.fypp \
                example/demo_p_n_real.gpl
           fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_prime_gnuplot_real.fypp \
                example/demo_p_n_prime_real.gpl
+          fypp ${{ matrix.fypp_args }} \
+               example/demo_p_n_around_zeros_gnuplot.fypp \
+               example/demo_p_n_around_zeros.gpl
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |
@@ -147,6 +157,7 @@ jobs:
           gnuplot --version
           gnuplot example/demo_p_n_real.gpl
           gnuplot example/demo_p_n_prime_real.gpl
+          gnuplot example/demo_p_n_around_zeros.gpl
 
       - name: Upload example outputs as artifact
         uses: actions/upload-artifact@v7

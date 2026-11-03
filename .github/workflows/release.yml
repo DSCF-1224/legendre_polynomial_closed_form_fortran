@@ -46,6 +46,8 @@ jobs:
           cp /tmp/legendre_polynomial_closed_form_fortran.f90 src/legendre_polynomial_closed_form_fortran.f90
 
           sed -i "s/^version = .*/version = \"${GITHUB_REF_NAME#v}\"/" fpm.toml
+          sed -i '/^\[dev-dependencies\]/,$d' fpm.toml
+          sed -i '${/^$/d}' fpm.toml
 
           git add -A
           git add -f src/legendre_polynomial_closed_form_fortran.f90

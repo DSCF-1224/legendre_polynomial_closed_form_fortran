@@ -2,6 +2,8 @@
 
 #:set MODULE_NAME = 'legendre_polynomial_closed_form_fortran'
 
+#:set MODULE_NAME_NEWTON_METHOD = 'legendre_polynomial_closed_form_newton_method_fortran'
+
 #:set DATA_TYPES = ['complex', 'real']
 
 #:set MAXVAL_DEGREE_INT32  = 15
@@ -70,5 +72,11 @@ ${P_N_SELECTABLE_INTERFACE}$_${data_type}$${str(real_kind)}$
 #:def P_N_SELECTABLE_PRIME_FUNCTION(data_type, real_kind)
 ${P_N_SELECTABLE_PRIME_INTERFACE}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_SELECTABLE_PRIME_FUNCTION
+
+#:set UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE = 'update_zero_by_newton_method'
+
+#:def UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION(real_kind)
+${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
+#:enddef UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION
 
 #:endmute

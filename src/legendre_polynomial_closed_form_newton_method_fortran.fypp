@@ -1,0 +1,97 @@
+#:mute
+
+#:include 'common.fypp'
+
+#:def WHAT_TO_RETURN(degree)
+x - P_${degree}$ (x) / P_${degree}$' (x)
+#:enddef
+
+#:endmute
+module ${MODULE_NAME_NEWTON_METHOD}$
+  !! @note
+  !! - \( P_n (x) \) is Legendre polynomial of degree \( n \)
+  #:if defined('WITH_REAL128')
+  !! - This module supports `real128`
+  #:else
+  !! - This module does NOT support `real128`
+  #:endif
+  !! @endnote
+
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, intrinsic :: ieee_arithmetic, only: ieee_signaling_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_value
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: &!
+  #:for DEGREE in range( 1, (MAXVAL_DEGREE_INTERFACE_PRIME + 1) )
+    ${P_N_INTERFACE(DEGREE)}$, ${P_N_PRIME_INTERFACE(DEGREE)}$#{if DEGREE < MAXVAL_DEGREE_INTERFACE_PRIME}#, &!#{endif}#
+  #:endfor
+
+
+
+  implicit none
+
+
+
+  private
+
+  public :: ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$
+
+
+
+  !> version: experimental
+  !! $$
+  !! ${WHAT_TO_RETURN('n')}$ \ ( n = 1 , 2, \dots , N ),\ 
+  !! N =
+  !! \begin{cases}
+  #:if defined("WITH_REAL128")
+  !! ${MAXVAL_DEGREE_REAL_PRIME( 32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL_PRIME( 64)}$ & \text{for real64} \\
+  !! ${MAXVAL_DEGREE_REAL_PRIME(128)}$ & \text{for real128}
+  #:else
+  !! ${MAXVAL_DEGREE_REAL_PRIME(32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL_PRIME(64)}$ & \text{for real64}
+  #:endif
+  !! \end{cases}
+  !! $$
+  interface ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$
+    #:for REAL_KIND in REAL_KINDS
+    module procedure ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION(REAL_KIND)}$
+    #:endfor
+  end interface ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$
+
+
+
+  contains
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set FUNCTION_NAME = UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION(REAL_KIND)
+  real(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x) result(updated_x)
+    !! version: experimental
+    !! \( ${WHAT_TO_RETURN('n')}$ \ ( n = 1 , 2, \dots , ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$ ) \) for `real(real${REAL_KIND}$)`
+
+    integer(int32), intent(in) :: degree
+
+    real(real${REAL_KIND}$), intent(in) :: x
+
+
+    select case (degree)
+
+      #:for DEGREE in range(1, MAXVAL_DEGREE_REAL_PRIME(REAL_KIND) + 1)
+      case ( ${str(DEGREE).rjust(2)}$_int32 ); updated_x = x - ${P_N_INTERFACE(DEGREE)}$(x) / ${P_N_PRIME_INTERFACE(DEGREE)}$(x)
+      #:endfor
+
+      case default; updated_x = ieee_value(x, ieee_signaling_nan)
+
+    end select
+
+  end function ${FUNCTION_NAME}$
+  #:del FUNCTION_NAME
+
+  #:endfor
+  #! REAL_KIND
+end module ${MODULE_NAME_NEWTON_METHOD}$

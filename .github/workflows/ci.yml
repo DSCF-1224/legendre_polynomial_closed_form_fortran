@@ -95,6 +95,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_around_zeros_gnuplot.fypp \
                example/demo_p_n_around_zeros.gpl
+          fypp ${{ matrix.fypp_args }} \
+               example/demo_update_zero_by_newton_method_gnuplot.fypp \
+               example/demo_update_zero_by_newton_method.gpl
 
       - name: Generate reference data (${{ matrix.variant }})
         run: |
@@ -164,6 +167,7 @@ jobs:
           gnuplot example/demo_p_n_real.gpl
           gnuplot example/demo_p_n_prime_real.gpl
           gnuplot example/demo_p_n_around_zeros.gpl
+          gnuplot example/demo_update_zero_by_newton_method.gpl
 
       - name: Upload example outputs as artifact
         uses: actions/upload-artifact@v7

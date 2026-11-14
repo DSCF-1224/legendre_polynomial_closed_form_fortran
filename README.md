@@ -16,6 +16,9 @@ never need Python themselves. Evaluation itself uses Horner's method.
 The first derivatives $P_n'(x)$ are evaluated in the same way, from the closed form obtained by
 differentiating that expression term by term (see [Derivatives](#derivatives)).
 
+One step of Newton's method for the zeros of $P_n(x)$ is also provided, in a separate module
+(see [One step of Newton's method](#one-step-of-newtons-method)).
+
 [math-comb]: https://docs.python.org/3/library/math.html#math.comb
 [fypp]: https://github.com/aradi/fypp
 [branch-default]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/default
@@ -127,6 +130,35 @@ $P_n'(x) = n (P_{n-1}(x) - x P_n(x)) / (1 - x^2)$ using only
 derivative for complex arguments away from these points; the example below compares it with a
 reference.
 
+## One step of Newton's method
+
+`update_zero_by_newton_method(degree, x)` returns one step of Newton's method for a zero of
+$P_n(x)$, that is, $x - P_n(x) / P_n'(x)$ with $n$ = `degree`. It is provided by its own module,
+`legendre_polynomial_closed_form_newton_method_fortran`:
+
+```fortran
+use legendre_polynomial_closed_form_newton_method_fortran, only: update_zero_by_newton_method
+
+real(real64) :: x
+integer :: degree
+
+degree = 5
+x = 0.9_real64
+x = update_zero_by_newton_method(degree, x)   ! one step towards a zero of P_5
+```
+
+It is an `elemental` function of `real32`, `real64` and (in the `with_real128` branch) `real128`
+arguments; `complex` arguments are not accepted. The supported degrees are the same as those of
+`p_n_prime` (see [Supported degrees](#supported-degrees)), except for 0. Otherwise, including
+`degree` = 0, it returns a signaling NaN, as `p_n` does.
+
+Only a single step is provided. Stopping criteria are left to the caller. No check is made for
+$P_n'(x) = 0$: the division is carried out as it is.
+
+The tests check that the result is identical to `x - p_NN(x) / p_NN_prime(x)`, evaluated with
+the `p_NN` and `p_NN_prime` of the degree `NN`, at random points for every supported degree and
+real kind. See [Example](#example) for how the iteration behaves.
+
 ## Installation
 
 Add this as a dependency in your `fpm.toml`, pointing at either the `default` branch (`real32`
@@ -162,7 +194,20 @@ enclosing exactly one zero of the Legendre polynomial, for every supported degre
 kind. It writes the results to `.dat` files, and `example/demo_p_n_around_zeros.gpl` plots them
 as SVGs with [gnuplot][gnuplot], one curve per interval.
 
-That library is listed in `fpm.toml` under `[dev-dependencies]` for this example, and is not
+`example/demo_update_zero_by_newton_method.f90` applies `update_zero_by_newton_method` repeatedly,
+starting from both ends of each interval returned by `get_zero_interval` of
+[legendre_polynomial_zero_intervals_fortran][zero-intervals], for every supported degree and real
+kind. It writes the iterates and the values of `p_n` at them
+to `.dat` files, and `example/demo_update_zero_by_newton_method.gpl` plots them as SVGs with
+[gnuplot][gnuplot], one curve per end of each interval: the iterates, and the absolute values of
+`p_n` on a logarithmic axis, where a value of exactly zero is not shown.
+
+An iteration stops when the iterate no longer changes or `p_n` becomes exactly zero. Otherwise it
+continues until the number of iterations reaches the number of bits of the real kind, which is
+only an upper bound, not a convergence criterion. Some iterations never satisfy either condition,
+because of rounding errors.
+
+That library is listed in `fpm.toml` under `[dev-dependencies]` for these examples, and is not
 exported with this library: it is removed from the [`default`][branch-default]/
 [`with_real128`][branch-with-real128] branches. `fpm.toml` pins its `default` variant by tag;
 to build the example with `real128`, change the tag to its `with_real128` counterpart.

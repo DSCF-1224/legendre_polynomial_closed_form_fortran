@@ -84,6 +84,9 @@ jobs:
                example/demo_p_n_around_zeros_fortran.fypp \
                example/demo_p_n_around_zeros.f90
           fypp ${{ matrix.fypp_args }} \
+               example/demo_update_zero_by_newton_method_fortran.fypp \
+               example/demo_update_zero_by_newton_method.f90
+          fypp ${{ matrix.fypp_args }} \
                example/demo_p_n_gnuplot_real.fypp \
                example/demo_p_n_real.gpl
           fypp ${{ matrix.fypp_args }} \

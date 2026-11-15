@@ -3,7 +3,7 @@
 #:include 'common.fypp'
 
 #:def WHAT_TO_RETURN(degree)
-x - ${EQN_P_N(degree)}$(x) / P_${degree}$' (x)
+x - ${EQN_P_N(degree)}$(x) / ${EQN_P_N_PRIME(degree)}$(x)
 #:enddef
 
 #:endmute

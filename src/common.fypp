@@ -85,4 +85,8 @@ ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
 ${EQN_P_N_CORE}$_{${degree}$}
 #:enddef EQN_P_N
 
+#:def EQN_P_N_PRIME(degree)
+${EQN_P_N(degree)}$'
+#:enddef EQN_P_N_PRIME
+
 #:endmute

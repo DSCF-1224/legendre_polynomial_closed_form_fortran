@@ -100,12 +100,12 @@ program ${PROGRAM_NAME}$
       end if
 
 
-      write(error_unit, fmt=*) 'precision      : real${REAL_KIND}$'
-      write(error_unit, fmt=*) 'degree, x      : ', degree, ',', x
-      write(error_unit, fmt=*) "p_n' (scipy)   : ", scipy
-      write(error_unit, fmt=*) "p_n' (actual)  : ", actual
-      write(error_unit, fmt=*) "p_n' (abs err) : ", err_abs
-      write(error_unit, fmt=*) "p_n' (rel err) : ", err_rel
+      write(error_unit, fmt=*) 'precision           : real${REAL_KIND}$'
+      write(error_unit, fmt=*) 'degree, x           : ', degree, ',', x
+      write(error_unit, fmt=*) "${P_N_SELECTABLE_PRIME_INTERFACE}$ (scipy)   : ", scipy
+      write(error_unit, fmt=*) "${P_N_SELECTABLE_PRIME_INTERFACE}$ (actual)  : ", actual
+      write(error_unit, fmt=*) "${P_N_SELECTABLE_PRIME_INTERFACE}$ (abs err) : ", err_abs
+      write(error_unit, fmt=*) "${P_N_SELECTABLE_PRIME_INTERFACE}$ (rel err) : ", err_rel
 
       error stop
 

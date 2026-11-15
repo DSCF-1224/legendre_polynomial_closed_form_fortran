@@ -1,0 +1,64 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:endmute
+reset session
+
+set size square
+set xzeroaxis linetype -1
+set yzeroaxis linetype -1
+set palette model RGB rgbformulae 35,13,10 #rainbow (blue-green-yellow-red)
+set logscale x 2
+set xlabel 'number of iterations'
+set format x '{2}^{%L}'
+
+set terminal svg dynamic
+
+#:for REAL_KIND in REAL_KINDS
+
+do for [degree = 2:${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$] {
+
+    set title sprintf('precision: REAL${REAL_KIND}$ / degree: %2.2d', degree)
+    set cblabel sprintf("index of the interval")
+    set cbrange [1:degree]
+
+
+    set ylabel 'x'
+    unset logscale y
+    unset format y
+    set yrange [-1.1:1.1]
+
+    set output sprintf("example/demo_update_zero_by_newton_method_%2.2d_real${REAL_KIND}$_x.svg", degree)
+
+    plot for [k=1:(2 * degree)] \
+         block_id = 2 * (degree - 1), \
+         'example/demo_update_zero_by_newton_method_real${REAL_KIND}$.dat' \
+         using ( column(0) + 1 ):( column(k) ) every :::block_id::block_id \
+         with linespoints \
+         linewidth 1.0 linecolor palette frac ( real( (k + 1) / 2 ) / degree ) \
+         pointtype ( (k % 2) * 2 + 1 ) pointsize 0.5 \
+         notitle
+
+
+    set output sprintf("example/demo_update_zero_by_newton_method_%2.2d_real${REAL_KIND}$_${P_N_SELECTABLE_INTERFACE}$.svg", degree)
+
+    set ylabel sprintf('abs(P_{%d}(x))', degree)
+    set logscale y 10
+    set format y '{10}^{%L}'
+    unset yrange
+
+    plot for [k=1:(2 * degree)] \
+         block_id = 2 * degree - 1, \
+         'example/demo_update_zero_by_newton_method_real${REAL_KIND}$.dat' \
+         using ( column(0) + 1 ):( abs( column(k) ) ) every :::block_id::block_id \
+         with linespoints \
+         linewidth 1.0 linecolor palette frac ( real( (k + 1) / 2 ) / degree ) \
+         pointtype ( (k % 2) * 2 + 1 ) pointsize 0.5 \
+         notitle
+
+}
+
+#:endfor
+
+set output

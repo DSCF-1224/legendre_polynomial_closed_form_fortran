@@ -31,6 +31,9 @@ jobs:
           fypp ${{ matrix.fypp_args }} -m math \
                src/legendre_polynomial_closed_form_fortran.fypp \
                /tmp/legendre_polynomial_closed_form_fortran.f90
+          fypp ${{ matrix.fypp_args }} \
+               src/legendre_polynomial_closed_form_newton_method_fortran.fypp \
+               /tmp/legendre_polynomial_closed_form_newton_method_fortran.f90
 
       - name: Publish to ${{ matrix.branch }} branch
         run: |
@@ -40,10 +43,14 @@ jobs:
           git checkout -B ${{ matrix.branch }}
           rm -f src/common.fypp
           rm -f src/legendre_polynomial_closed_form_fortran.fypp
+          rm -f src/legendre_polynomial_closed_form_newton_method_fortran.fypp
           rm -rf test/
           rm -rf reference/
           rm -rf example/
-          cp /tmp/legendre_polynomial_closed_form_fortran.f90 src/legendre_polynomial_closed_form_fortran.f90
+          cp /tmp/legendre_polynomial_closed_form_fortran.f90 \
+              src/legendre_polynomial_closed_form_fortran.f90
+          cp /tmp/legendre_polynomial_closed_form_newton_method_fortran.f90 \
+              src/legendre_polynomial_closed_form_newton_method_fortran.f90
 
           sed -i "s/^version = .*/version = \"${GITHUB_REF_NAME#v}\"/" fpm.toml
           sed -i '/^\[dev-dependencies\]/,$d' fpm.toml
@@ -51,6 +58,7 @@ jobs:
 
           git add -A
           git add -f src/legendre_polynomial_closed_form_fortran.f90
+          git add -f src/legendre_polynomial_closed_form_newton_method_fortran.f90
 
           git commit -m "chore: regenerate for ${GITHUB_REF_NAME}"
           git tag "${GITHUB_REF_NAME}+${{ matrix.branch }}"

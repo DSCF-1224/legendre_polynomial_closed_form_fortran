@@ -33,7 +33,7 @@ jobs:
 
       - name: Install fpm (x86_64)
         if: matrix.runner != 'ubuntu-24.04-arm'
-        uses: fortran-lang/setup-fpm@v10
+        uses: fortran-lang/setup-fpm@v11
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

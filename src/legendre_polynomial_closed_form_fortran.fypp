@@ -130,8 +130,8 @@ module ${MODULE_NAME}$
 
   !> version: experimental
   !! $$
-  !! P_n (x) \ ( n = 0 , 1, \dots , N ),\ 
-  !! N =
+  !! P_n (x) \ ( n = 0 , 1, \dots , N ),
+  !! \ N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
   !! ${MAXVAL_DEGREE_REAL( 32)}$ & \text{for real32} \\
@@ -186,8 +186,8 @@ module ${MODULE_NAME}$
 
   !> version: experimental
   !! $$
-  !! P'_n (x) \ ( n = 0 , 1, \dots , N ),\ 
-  !! N =
+  !! P'_n (x) \ ( n = 0 , 1, \dots , N ),
+  !! \ N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
   !! ${MAXVAL_DEGREE_REAL_PRIME( 32)}$ & \text{for real32} \\

@@ -44,8 +44,8 @@ module ${MODULE_NAME_NEWTON_METHOD}$
 
   !> version: experimental
   !! $$
-  !! ${WHAT_TO_RETURN('n')}$ \ ( n = 1 , 2, \dots , N ),\ 
-  !! N =
+  !! ${WHAT_TO_RETURN('n')}$ \ ( n = 1 , 2, \dots , N ),
+  !! \ N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
   !! ${MAXVAL_DEGREE_REAL_PRIME( 32)}$ & \text{for real32} \\

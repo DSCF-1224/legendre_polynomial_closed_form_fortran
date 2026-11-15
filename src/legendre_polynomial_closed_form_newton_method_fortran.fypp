@@ -3,13 +3,13 @@
 #:include 'common.fypp'
 
 #:def WHAT_TO_RETURN(degree)
-x - P_${degree}$ (x) / P_${degree}$' (x)
+x - ${EQN_P_N(degree)}$(x) / ${EQN_P_N_PRIME(degree)}$(x)
 #:enddef
 
 #:endmute
 module ${MODULE_NAME_NEWTON_METHOD}$
   !! @note
-  !! - \( P_n (x) \) is Legendre polynomial of degree \( n \)
+  !! - \( ${EQN_P_N('n')}$ (x) \) is Legendre polynomial of degree \( n \)
   #:if defined('WITH_REAL128')
   !! - This module supports `real128`
   #:else
@@ -44,8 +44,8 @@ module ${MODULE_NAME_NEWTON_METHOD}$
 
   !> version: experimental
   !! $$
-  !! ${WHAT_TO_RETURN('n')}$ \ ( n = 1 , 2, \dots , N ),\ 
-  !! N =
+  !! ${WHAT_TO_RETURN('n')}$ \ ( n = 1 , 2, \dots , N ),
+  !! \ N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
   !! ${MAXVAL_DEGREE_REAL_PRIME( 32)}$ & \text{for real32} \\

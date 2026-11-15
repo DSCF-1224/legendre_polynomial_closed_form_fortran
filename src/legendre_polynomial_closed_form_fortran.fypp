@@ -40,7 +40,7 @@ ${P_N_PRIME_INTERFACE(degree)}$_${data_type}$${str(real_kind)}$
 module ${MODULE_NAME}$
   !! Legendre polynomial evaluation for Fortran, via the closed-form expression.
   !! @note
-  !! - \( P_n (x) \) is Legendre polynomial of degree \( n \)
+  !! - \( ${EQN_P_N('n')}$ (x) \) is Legendre polynomial of degree \( n \)
   #:if defined('WITH_REAL128')
   !! - This module supports `real128`
   #:else
@@ -72,14 +72,14 @@ module ${MODULE_NAME}$
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
-  integer(int32), parameter :: ${DENOMINATOR_NAME(DEGREE)}$ = ${DENOMINATOR_VALUE(DEGREE).rjust(10)}$_int32 !! for \( P_{${str(DEGREE).rjust(2)}$} (x) \)
+  integer(int32), parameter :: ${DENOMINATOR_NAME(DEGREE)}$ = ${DENOMINATOR_VALUE(DEGREE).rjust(10)}$_int32 !! for \( ${EQN_P_N(str(DEGREE).rjust(2))}$ (x) \)
   #:endfor
 
 
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64 + 1) )
   #:for J in range( 0, (DEGREE//2 + 1) )
-  integer(int${NUMERATOR_INT_KIND(DEGREE)}$), parameter :: ${NUMERATOR_NAME(DEGREE, J)}$ = ${NUMERATOR_VALUE(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J}$} \) of \( P_{${DEGREE}$} (x) \)
+  integer(int${NUMERATOR_INT_KIND(DEGREE)}$), parameter :: ${NUMERATOR_NAME(DEGREE, J)}$ = ${NUMERATOR_VALUE(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J}$} \) of \( ${EQN_P_N(DEGREE)}$ (x) \)
   #:endfor
 
   #:endfor
@@ -89,7 +89,7 @@ module ${MODULE_NAME}$
 
   #:for DEGREE in range( 2, (MAXVAL_DEGREE_INT64_PRIME + 1) )
   #:for J in range( 0, ( (DEGREE + 1) // 2 ) )
-  integer(int${NUMERATOR_INT_KIND_PRIME(DEGREE)}$), parameter :: ${NUMERATOR_NAME_PRIME(DEGREE, J)}$ = ${NUMERATOR_VALUE_PRIME(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND_PRIME(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J - 1}$} \) of \( P_{${DEGREE}$}' (x) \)
+  integer(int${NUMERATOR_INT_KIND_PRIME(DEGREE)}$), parameter :: ${NUMERATOR_NAME_PRIME(DEGREE, J)}$ = ${NUMERATOR_VALUE_PRIME(DEGREE, J).rjust(20)}$_int${NUMERATOR_INT_KIND_PRIME(DEGREE)}$ !! for \( x^{${DEGREE - 2 * J - 1}$} \) of \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \)
   #:endfor
 
   #:endfor
@@ -100,17 +100,17 @@ module ${MODULE_NAME}$
   !> version: experimental
   #:if defined("WITH_REAL128")
   #:if DEGREE <= MAXVAL_DEGREE_REAL32
-  !! \( P_{${DEGREE}$} (x) \) for `real32`, `real64` and `real128`
+  !! \( ${EQN_P_N(DEGREE)}$ (x) \) for `real32`, `real64` and `real128`
   #:elif DEGREE <= MAXVAL_DEGREE_REAL64
-  !! \( P_{${DEGREE}$} (x) \) for `real64` and `real128`
+  !! \( ${EQN_P_N(DEGREE)}$ (x) \) for `real64` and `real128`
   #:else
-  !! \( P_{${DEGREE}$} (x) \) for `real128` only
+  !! \( ${EQN_P_N(DEGREE)}$ (x) \) for `real128` only
   #:endif
   #:else
   #:if DEGREE <= MAXVAL_DEGREE_REAL32
-  !! \( P_{${DEGREE}$} (x) \) for `real32` and `real64`
+  !! \( ${EQN_P_N(DEGREE)}$ (x) \) for `real32` and `real64`
   #:elif DEGREE <= MAXVAL_DEGREE_REAL64
-  !! \( P_{${DEGREE}$} (x) \) for `real64` only
+  !! \( ${EQN_P_N(DEGREE)}$ (x) \) for `real64` only
   #:endif
   #:endif
   #:set INTERFACE_NAME = P_N_INTERFACE(DEGREE)
@@ -130,8 +130,8 @@ module ${MODULE_NAME}$
 
   !> version: experimental
   !! $$
-  !! P_n (x) \ ( n = 0 , 1, \dots , N ),\ 
-  !! N =
+  !! ${EQN_P_N('n')}$ (x) \ ( n = 0 , 1, \dots , N ),
+  !! \ N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
   !! ${MAXVAL_DEGREE_REAL( 32)}$ & \text{for real32} \\
@@ -156,17 +156,17 @@ module ${MODULE_NAME}$
   !> version: experimental
   #:if defined("WITH_REAL128")
   #:if DEGREE <= MAXVAL_DEGREE_REAL32_PRIME
-  !! \( P_{${DEGREE}$}' (x) \) for `real32`, `real64` and `real128`
+  !! \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \) for `real32`, `real64` and `real128`
   #:elif DEGREE <= MAXVAL_DEGREE_REAL64_PRIME
-  !! \( P_{${DEGREE}$}' (x) \) for `real64` and `real128`
+  !! \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \) for `real64` and `real128`
   #:else
-  !! \( P_{${DEGREE}$}' (x) \) for `real128` only
+  !! \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \) for `real128` only
   #:endif
   #:else
   #:if DEGREE <= MAXVAL_DEGREE_REAL32_PRIME
-  !! \( P_{${DEGREE}$}' (x) \) for `real32` and `real64`
+  !! \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \) for `real32` and `real64`
   #:elif DEGREE <= MAXVAL_DEGREE_REAL64_PRIME
-  !! \( P_{${DEGREE}$}' (x) \) for `real64` only
+  !! \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \) for `real64` only
   #:endif
   #:endif
   #:set INTERFACE_NAME = P_N_PRIME_INTERFACE(DEGREE)
@@ -186,8 +186,8 @@ module ${MODULE_NAME}$
 
   !> version: experimental
   !! $$
-  !! P'_n (x) \ ( n = 0 , 1, \dots , N ),\ 
-  !! N =
+  !! ${EQN_P_N_PRIME('n')}$ (x) \ ( n = 0 , 1, \dots , N ),
+  !! \ N =
   !! \begin{cases}
   #:if defined("WITH_REAL128")
   !! ${MAXVAL_DEGREE_REAL_PRIME( 32)}$ & \text{for real32} \\
@@ -218,7 +218,7 @@ module ${MODULE_NAME}$
   #:set FUNCTION_NAME = P_N_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)
   ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
     !! version: experimental
-    !! \( P_{${DEGREE}$} (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+    !! \( ${EQN_P_N(DEGREE)}$ (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
 
     ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
 
@@ -265,7 +265,7 @@ module ${MODULE_NAME}$
   #:set FUNCTION_NAME = P_N_PRIME_FUNCTION(DEGREE, DATA_TYPE, REAL_KIND)
   ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(x)
     !! version: experimental
-    !! \( P_{${DEGREE}$}' (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+    !! \( ${EQN_P_N_PRIME(DEGREE)}$ (x) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
 
     ${DATA_TYPE}$(real${REAL_KIND}$), intent(in) :: x
 
@@ -310,7 +310,7 @@ module ${MODULE_NAME}$
   #:set FUNCTION_NAME = P_N_SELECTABLE_FUNCTION(DATA_TYPE, REAL_KIND)
   ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
     !! version: experimental
-    !! \( P_n (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+    !! \( ${EQN_P_N('n')}$ (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
 
     integer(int32), intent(in) :: degree
 
@@ -354,7 +354,7 @@ module ${MODULE_NAME}$
   #:set FUNCTION_NAME = P_N_SELECTABLE_PRIME_FUNCTION(DATA_TYPE, REAL_KIND)
   ${DATA_TYPE}$(real${REAL_KIND}$) elemental function ${FUNCTION_NAME}$(degree, x)
     !! version: experimental
-    !! \( P'_n (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$ ) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
+    !! \( ${EQN_P_N_PRIME('n')}$ (x) \ ( n = 0 , 1, \dots , ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$ ) \) for `${DATA_TYPE}$(real${REAL_KIND}$)`
 
     integer(int32), intent(in) :: degree
 

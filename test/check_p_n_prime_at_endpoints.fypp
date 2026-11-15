@@ -54,7 +54,7 @@ program ${PROGRAM_NAME}$
 
   #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(DATA_TYPE, REAL_KIND)
   subroutine ${SUBROUTINE_NAME}$()
-    !! \( P_n' (\pm 1) = (\pm 1)^{n+1} n (n + 1) / 2 \)
+    !! \( ${EQN_P_N_PRIME('n')}$ (\pm 1) = (\pm 1)^{n+1} n (n + 1) / 2 \)
 
     integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$
 

@@ -23,7 +23,7 @@ set title ('precision: REAL' . ${REAL_KIND}$)
 
 do for [degree = 0:${MAXVAL_DEGREE_REAL(REAL_KIND)}$] {
 
-    set cblabel sprintf('log10[ abs( P_{%d}(z) ) ]', degree)
+    set cblabel sprintf('log10[ abs( ${EQN_P_N('%d')}$(z) ) ]', degree)
 
     set output sprintf("example/demo_p_%2.2d_complex${REAL_KIND}$_actual.svg", degree)
 
@@ -37,7 +37,7 @@ do for [degree = 0:${MAXVAL_DEGREE_REAL(REAL_KIND)}$] {
 
     set output sprintf("example/demo_p_%2.2d_complex${REAL_KIND}$_error.svg", degree)
 
-    set cblabel sprintf('log10[ abs( P_{%d}(z) vs mpmath ) ]', degree)
+    set cblabel sprintf('log10[ abs( ${EQN_P_N('%d')}$(z) vs mpmath ) ]', degree)
 
     plot 'example/demo_p_n_complex${REAL_KIND}$_error.dat' \
          using 1:2:( log10( column(degree + 3) ) ) \

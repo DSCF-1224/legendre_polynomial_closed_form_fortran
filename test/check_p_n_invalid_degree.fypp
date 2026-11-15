@@ -95,8 +95,8 @@ program ${PROGRAM_NAME}$
               write(error_unit, *) 'n         : ', degree
               write(error_unit, *) 'x%re      : ', x%re
               write(error_unit, *) 'x%im      : ', x%im
-              write(error_unit, *) 'p_n(x)%re : ', actual_${P_N_SELECTABLE_INTERFACE}$%re
-              write(error_unit, *) 'p_n(x)%im : ', actual_${P_N_SELECTABLE_INTERFACE}$%im
+              write(error_unit, *) '${P_N_SELECTABLE_INTERFACE}$(x)%re : ', actual_${P_N_SELECTABLE_INTERFACE}$%re
+              write(error_unit, *) '${P_N_SELECTABLE_INTERFACE}$(x)%im : ', actual_${P_N_SELECTABLE_INTERFACE}$%im
               write(error_unit, *) 'This value must be NaN.'
 
             error stop
@@ -108,7 +108,7 @@ program ${PROGRAM_NAME}$
           if ( .not. ieee_is_nan(actual_${P_N_SELECTABLE_INTERFACE}$) ) then
 
             write(error_unit, *) 'n, x   : ', degree, ',', x
-            write(error_unit, *) 'p_n(x) : ', actual_${P_N_SELECTABLE_INTERFACE}$
+            write(error_unit, *) '${P_N_SELECTABLE_INTERFACE}$(x) : ', actual_${P_N_SELECTABLE_INTERFACE}$
             write(error_unit, *) 'This value must be NaN.'
 
             error stop

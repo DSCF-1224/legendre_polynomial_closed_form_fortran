@@ -43,7 +43,7 @@ do for [degree = 2:${MAXVAL_DEGREE_REAL_PRIME(REAL_KIND)}$] {
 
     set output sprintf("example/demo_update_zero_by_newton_method_%2.2d_real${REAL_KIND}$_${P_N_SELECTABLE_INTERFACE}$.svg", degree)
 
-    set ylabel sprintf('abs(P_{%d}(x))', degree)
+    set ylabel sprintf('abs(${EQN_P_N('%d')}$(x))', degree)
     set logscale y 10
     set format y '{10}^{%L}'
     unset yrange

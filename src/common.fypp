@@ -79,4 +79,10 @@ ${P_N_SELECTABLE_PRIME_INTERFACE}$_${data_type}$${str(real_kind)}$
 ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
 #:enddef UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION
 
+#:set EQN_P_N_CORE = 'P'
+
+#:def EQN_P_N(degree)
+${EQN_P_N_CORE}$_{${degree}$}
+#:enddef EQN_P_N
+
 #:endmute

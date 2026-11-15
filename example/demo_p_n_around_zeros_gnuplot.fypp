@@ -10,7 +10,7 @@ set xzeroaxis linetype -1
 set yzeroaxis linetype -1
 set palette model RGB rgbformulae 35,13,10 #rainbow (blue-green-yellow-red)
 set xlabel 'x'
-set ylabel 'P_n(x)'
+set ylabel '${EQN_P_N('n')}$(x)'
 set xrange [-1.1:1.1]
 unset colorbox
 
@@ -20,7 +20,7 @@ set terminal svg dynamic
 
 do for [degree = 1:${MAXVAL_DEGREE_REAL(REAL_KIND)}$] {
 
-    set title ( 'precision: REAL${REAL_KIND}$; '. sprintf('P_{%d}(x)', degree) )
+    set title ( 'precision: REAL${REAL_KIND}$; '. sprintf('${EQN_P_N('%d')}$(x)', degree) )
 
     set output sprintf("example/demo_p_%2.2d_around_zeros_real${REAL_KIND}$.svg", degree)
 

@@ -88,10 +88,10 @@ program ${PROGRAM_NAME}$
 
         write(error_unit, fmt=*) 'precision     : real${REAL_KIND}$'
         write(error_unit, fmt=*) 'degree, x     : ', degree, ',', x
-        write(error_unit, fmt=*) 'p_n (scipy)   : ', scipy_${P_N_SELECTABLE_INTERFACE}$
-        write(error_unit, fmt=*) 'p_n (actual)  : ', actual_${P_N_SELECTABLE_INTERFACE}$
-        write(error_unit, fmt=*) 'p_n (abs err) : ', err_abs_${P_N_SELECTABLE_INTERFACE}$
-        write(error_unit, fmt=*) 'p_n (rel err) : ', err_rel_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) '${P_N_SELECTABLE_INTERFACE}$ (scipy)   : ', scipy_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) '${P_N_SELECTABLE_INTERFACE}$ (actual)  : ', actual_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) '${P_N_SELECTABLE_INTERFACE}$ (abs err) : ', err_abs_${P_N_SELECTABLE_INTERFACE}$
+        write(error_unit, fmt=*) '${P_N_SELECTABLE_INTERFACE}$ (rel err) : ', err_rel_${P_N_SELECTABLE_INTERFACE}$
 
         error stop
 

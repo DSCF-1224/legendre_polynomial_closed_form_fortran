@@ -124,6 +124,18 @@ jobs:
           python3 example/mpmath_complex_prime.py \
                 > example/mpmath_complex_prime.dat
 
+      - name: Check whether the compiler accepts -std=f2023
+        id: std2023
+        run: |
+          fc="${FPM_FC:-gfortran}"
+          "$fc" --version | head -n 1
+          if echo 'end' | "$fc" -std=f2023 -x f95 -fsyntax-only - > /dev/null 2>&1; then
+            echo "supported=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "supported=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$fc does not accept -std=f2023; the strict 2023 steps are skipped"
+          fi
+
       - name: Run tests (debug)
         run: fpm test --profile debug
 
@@ -136,6 +148,12 @@ jobs:
         run: |
           fpm clean --all
           fpm test --profile debug --flag "-Werror -std=f2018"
+
+      - name: Run tests (strict, 2023)
+        if: steps.std2023.outputs.supported == 'true'
+        run: |
+          fpm clean --all
+          fpm test --profile debug --flag "-Werror -std=f2023"
 
       - name: Run tests (release)
         run: |
@@ -154,6 +172,12 @@ jobs:
         run: |
           fpm clean --all
           fpm run --example --profile debug --flag "-Werror -std=f2018"
+
+      - name: Run examples (strict, 2023)
+        if: steps.std2023.outputs.supported == 'true'
+        run: |
+          fpm clean --all
+          fpm run --example --profile debug --flag "-Werror -std=f2023"
 
       - name: Run examples (release)
         run: |

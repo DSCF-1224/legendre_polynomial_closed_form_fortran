@@ -2,7 +2,11 @@
 
 #:set MODULE_NAME = 'legendre_polynomial_closed_form_fortran'
 
+#:set MODULE_NAME_BISECTION_METHOD = 'legendre_polynomial_closed_form_bisection_method_fortran'
+
 #:set MODULE_NAME_NEWTON_METHOD = 'legendre_polynomial_closed_form_newton_method_fortran'
+
+
 
 #:set DATA_TYPES = ['complex', 'real']
 
@@ -53,6 +57,8 @@
 #:endif
 #:enddef NUMERATOR_INT_KIND_PRIME
 
+
+
 #:def P_N_INTERFACE(degree)
 p_${str(degree).zfill(2)}$
 #:enddef P_N_INTERFACE
@@ -61,9 +67,17 @@ p_${str(degree).zfill(2)}$
 p_${str(degree).zfill(2)}$_prime
 #:enddef P_N_PRIME_INTERFACE
 
+
+
 #:set P_N_SELECTABLE_INTERFACE = 'p_n'
 
 #:set P_N_SELECTABLE_PRIME_INTERFACE = 'p_n_prime'
+
+#:set UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE = 'update_interval_by_bisection_method'
+
+#:set UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE = 'update_zero_by_newton_method'
+
+
 
 #:def P_N_SELECTABLE_FUNCTION(data_type, real_kind)
 ${P_N_SELECTABLE_INTERFACE}$_${data_type}$${str(real_kind)}$
@@ -73,11 +87,15 @@ ${P_N_SELECTABLE_INTERFACE}$_${data_type}$${str(real_kind)}$
 ${P_N_SELECTABLE_PRIME_INTERFACE}$_${data_type}$${str(real_kind)}$
 #:enddef P_N_SELECTABLE_PRIME_FUNCTION
 
-#:set UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE = 'update_zero_by_newton_method'
+#:def UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_SUBROUTINE(real_kind)
+${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
+#:enddef UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_SUBROUTINE
 
 #:def UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION(real_kind)
 ${UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_INTERFACE}$_real${str(real_kind)}$
 #:enddef UPDATE_ZERO_BY_NEWTON_METHOD_SELECTABLE_FUNCTION
+
+
 
 #:set EQN_P_N_CORE = 'P'
 

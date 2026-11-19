@@ -186,7 +186,8 @@ jobs:
 
       - name: Install & run gnuplot
         run: |
-          sudo apt install -y gnuplot
+          sudo apt-get update
+          sudo apt-get install -y gnuplot
           gnuplot --version
           gnuplot example/demo_p_n_real.gpl
           gnuplot example/demo_p_n_prime_real.gpl

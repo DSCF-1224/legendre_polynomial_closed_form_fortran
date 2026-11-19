@@ -1,0 +1,147 @@
+#:mute
+
+#:include 'common.fypp'
+
+#:endmute
+module ${MODULE_NAME_BISECTION_METHOD}$
+  !! @note
+  !! - \( ${EQN_P_N('n')}$ (x) \) is Legendre polynomial of degree \( n \)
+  #:if defined('WITH_REAL128')
+  !! - This module supports `real128`
+  #:else
+  !! - This module does NOT support `real128`
+  #:endif
+  !! @endnote
+
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, intrinsic :: ieee_arithmetic, only: ieee_signaling_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_value
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: &!
+  #:for DEGREE in range( 1, (MAXVAL_DEGREE_INTERFACE + 1) )
+    ${P_N_INTERFACE(DEGREE)}$#{if DEGREE < MAXVAL_DEGREE_INTERFACE}#, &!#{endif}#
+  #:endfor
+
+
+
+  implicit none
+
+
+
+  private
+
+  public :: ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$
+
+
+
+  !> version: experimental
+  !! One step of the bisection method for a zero of \( ${EQN_P_N('n')}$ (x) \)
+  !! \( ( n = 1 , 2, \dots , N ) \), where
+  !! $$
+  !! N =
+  !! \begin{cases}
+  #:if defined("WITH_REAL128")
+  !! ${MAXVAL_DEGREE_REAL( 32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL( 64)}$ & \text{for real64} \\
+  !! ${MAXVAL_DEGREE_REAL(128)}$ & \text{for real128}
+  #:else
+  !! ${MAXVAL_DEGREE_REAL(32)}$ & \text{for real32} \\
+  !! ${MAXVAL_DEGREE_REAL(64)}$ & \text{for real64}
+  #:endif
+  !! \end{cases}
+  !! $$
+  !!
+  !! The interval is given by `x_lower` and `x_upper`, and the values of
+  !! \( ${EQN_P_N('n')}$ (x) \) at these ends by `p_n_lower` and `p_n_upper`.
+  !! These four arguments are updated in place.
+  !! The midpoint `(x_lower + x_upper) * 0.5` is evaluated, and
+  !! - if \( ${EQN_P_N('n')}$ \) is exactly zero there, both ends become the midpoint;
+  !! - if its sign is the same as that of `p_n_lower`, the lower end becomes the midpoint;
+  !! - otherwise, the upper end becomes the midpoint.
+  !!
+  !! `p_n_lower` and `p_n_upper` are updated together with the ends.
+  !! Therefore \( ${EQN_P_N('n')}$ \) is evaluated once per step.
+  !!
+  !! If `degree` is not supported, the four arguments become signaling NaNs.
+  !!
+  !! @warning
+  !! The signs of `p_n_lower` and `p_n_upper` must be different,
+  !! and these must be the values of \( ${EQN_P_N('n')}$ \) at `x_lower` and `x_upper`.
+  !! This is not checked.
+  !! @endwarning
+  interface ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$
+    #:for REAL_KIND in REAL_KINDS
+    module procedure ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_SUBROUTINE(REAL_KIND)}$
+    #:endfor
+  end interface ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$
+
+
+
+  contains
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_SUBROUTINE(REAL_KIND)
+  elemental subroutine ${SUBROUTINE_NAME}$(degree, x_lower, x_upper, p_n_lower, p_n_upper)
+    !! version: experimental
+    !! One step of the bisection method for a zero of
+    !! \( ${EQN_P_N('n')}$ (x) \ ( n = 1 , 2, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `real(real${REAL_KIND}$)`
+
+    integer(int32), intent(in) :: degree
+
+    real(real${REAL_KIND}$), intent(inout) :: x_lower, x_upper
+
+    real(real${REAL_KIND}$), intent(inout) :: p_n_lower, p_n_upper
+
+
+    real(real${REAL_KIND}$) :: x_middle, p_n_middle
+
+
+    x_middle = (x_lower + x_upper) * 0.5_real${REAL_KIND}$
+
+    select case (degree)
+
+      #:for DEGREE in range(1, MAXVAL_DEGREE_REAL(REAL_KIND) + 1)
+      case ( ${str(DEGREE).rjust(2)}$_int32 ); p_n_middle = ${P_N_INTERFACE(DEGREE)}$(x_middle)
+      #:endfor
+
+      case default
+
+        x_lower   = ieee_value(x_lower, ieee_signaling_nan)
+        x_upper   = ieee_value(x_upper, ieee_signaling_nan)
+        p_n_lower = ieee_value(p_n_lower, ieee_signaling_nan)
+        p_n_upper = ieee_value(p_n_upper, ieee_signaling_nan)
+
+        return
+
+    end select
+
+    if ( abs(p_n_middle) <= 0.0_real${REAL_KIND}$ ) then
+
+      x_lower   = x_middle
+      x_upper   = x_middle
+      p_n_lower = p_n_middle
+      p_n_upper = p_n_middle
+
+    else if ( (p_n_middle < 0.0_real${REAL_KIND}$) .eqv. (p_n_lower < 0.0_real${REAL_KIND}$) ) then
+
+      x_lower   = x_middle
+      p_n_lower = p_n_middle
+
+    else
+
+      x_upper   = x_middle
+      p_n_upper = p_n_middle
+
+    end if
+
+  end subroutine ${SUBROUTINE_NAME}$
+  #:del SUBROUTINE_NAME
+
+  #:endfor
+  #! REAL_KIND
+end module ${MODULE_NAME_BISECTION_METHOD}$

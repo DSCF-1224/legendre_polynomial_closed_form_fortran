@@ -48,7 +48,7 @@ program ${PROGRAM_NAME}$
 
     integer(int32) :: degree
 
-    real(real${REAL_KIND}$) :: x_lower, x_upper, p_n_lower, p_n_upper
+    real(real${REAL_KIND}$) :: x_a, x_b, p_n_a, p_n_b
 
 
     do degree = (-10_int32 * maxval_degree), (10_int32 * maxval_degree)
@@ -61,20 +61,20 @@ program ${PROGRAM_NAME}$
 
         case default
 
-          call random_number(x_lower)
-          call random_number(x_upper)
-          call random_number(p_n_lower)
-          call random_number(p_n_upper)
+          call random_number(x_a)
+          call random_number(x_b)
+          call random_number(p_n_a)
+          call random_number(p_n_b)
 
-          call ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$(degree, x_lower, x_upper, p_n_lower, p_n_upper)
+          call ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$(degree, x_a, x_b, p_n_a, p_n_b)
 
-          if ( .not. all( ieee_is_nan( [x_lower, x_upper, p_n_lower, p_n_upper] ) ) ) then
+          if ( .not. all( ieee_is_nan( [x_a, x_b, p_n_a, p_n_b] ) ) ) then
 
-            write(error_unit, *) 'n         : ', degree
-            write(error_unit, *) 'x_lower   : ', x_lower
-            write(error_unit, *) 'x_upper   : ', x_upper
-            write(error_unit, *) 'p_n_lower : ', p_n_lower
-            write(error_unit, *) 'p_n_upper : ', p_n_upper
+            write(error_unit, *) 'n     : ', degree
+            write(error_unit, *) 'x_a   : ', x_a
+            write(error_unit, *) 'x_b   : ', x_b
+            write(error_unit, *) 'p_n_a : ', p_n_a
+            write(error_unit, *) 'p_n_b : ', p_n_b
             write(error_unit, *) 'These values must be NaN.'
 
             error stop

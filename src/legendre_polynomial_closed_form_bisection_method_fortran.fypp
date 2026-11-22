@@ -55,22 +55,23 @@ module ${MODULE_NAME_BISECTION_METHOD}$
   !! \end{cases}
   !! $$
   !!
-  !! The interval is given by `x_lower` and `x_upper`, and the values of
-  !! \( ${EQN_P_N('n')}$ (x) \) at these ends by `p_n_lower` and `p_n_upper`.
+  !! The ends of the interval are given by `x_a` and `x_b`, and the values of
+  !! \( ${EQN_P_N('n')}$ (x) \) at these ends by `p_n_a` and `p_n_b`.
   !! These four arguments are updated in place.
-  !! The midpoint `(x_lower + x_upper) * 0.5` is evaluated, and
+  !! The order of `x_a` and `x_b` is not used.
+  !! The midpoint `(x_a + x_b) * 0.5` is evaluated, and
   !! - if \( ${EQN_P_N('n')}$ \) is exactly zero there, both ends become the midpoint;
-  !! - if its sign is the same as that of `p_n_lower`, the lower end becomes the midpoint;
-  !! - otherwise, the upper end becomes the midpoint.
+  !! - if its sign is the same as that of `p_n_a`, `x_a` becomes the midpoint;
+  !! - otherwise, `x_b` becomes the midpoint.
   !!
-  !! `p_n_lower` and `p_n_upper` are updated together with the ends.
+  !! `p_n_a` and `p_n_b` are updated together with the ends.
   !! Therefore \( ${EQN_P_N('n')}$ \) is evaluated once per step.
   !!
   !! If `degree` is not supported, the four arguments become signaling NaNs.
   !!
   !! @warning
-  !! The signs of `p_n_lower` and `p_n_upper` must be different,
-  !! and these must be the values of \( ${EQN_P_N('n')}$ \) at `x_lower` and `x_upper`.
+  !! The signs of `p_n_a` and `p_n_b` must be different,
+  !! and these must be the values of \( ${EQN_P_N('n')}$ \) at `x_a` and `x_b`.
   !! This is not checked.
   !! @endwarning
   interface ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$
@@ -86,22 +87,22 @@ module ${MODULE_NAME_BISECTION_METHOD}$
   #:for REAL_KIND in REAL_KINDS
 
   #:set SUBROUTINE_NAME = UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_SUBROUTINE(REAL_KIND)
-  elemental subroutine ${SUBROUTINE_NAME}$(degree, x_lower, x_upper, p_n_lower, p_n_upper)
+  elemental subroutine ${SUBROUTINE_NAME}$(degree, x_a, x_b, p_n_a, p_n_b)
     !! version: experimental
     !! One step of the bisection method for a zero of
     !! \( ${EQN_P_N('n')}$ (x) \ ( n = 1 , 2, \dots , ${MAXVAL_DEGREE_REAL(REAL_KIND)}$ ) \) for `real(real${REAL_KIND}$)`
 
     integer(int32), intent(in) :: degree
 
-    real(real${REAL_KIND}$), intent(inout) :: x_lower, x_upper
+    real(real${REAL_KIND}$), intent(inout) :: x_a, x_b
 
-    real(real${REAL_KIND}$), intent(inout) :: p_n_lower, p_n_upper
+    real(real${REAL_KIND}$), intent(inout) :: p_n_a, p_n_b
 
 
     real(real${REAL_KIND}$) :: x_middle, p_n_middle
 
 
-    x_middle = (x_lower + x_upper) * 0.5_real${REAL_KIND}$
+    x_middle = (x_a + x_b) * 0.5_real${REAL_KIND}$
 
     select case (degree)
 
@@ -111,10 +112,10 @@ module ${MODULE_NAME_BISECTION_METHOD}$
 
       case default
 
-        x_lower   = ieee_value(x_lower, ieee_signaling_nan)
-        x_upper   = ieee_value(x_upper, ieee_signaling_nan)
-        p_n_lower = ieee_value(p_n_lower, ieee_signaling_nan)
-        p_n_upper = ieee_value(p_n_upper, ieee_signaling_nan)
+        x_a   = ieee_value(x_a, ieee_signaling_nan)
+        x_b   = ieee_value(x_b, ieee_signaling_nan)
+        p_n_a = ieee_value(p_n_a, ieee_signaling_nan)
+        p_n_b = ieee_value(p_n_b, ieee_signaling_nan)
 
         return
 
@@ -122,20 +123,20 @@ module ${MODULE_NAME_BISECTION_METHOD}$
 
     if ( abs(p_n_middle) <= 0.0_real${REAL_KIND}$ ) then
 
-      x_lower   = x_middle
-      x_upper   = x_middle
-      p_n_lower = p_n_middle
-      p_n_upper = p_n_middle
+      x_a   = x_middle
+      x_b   = x_middle
+      p_n_a = p_n_middle
+      p_n_b = p_n_middle
 
-    else if ( (p_n_middle < 0.0_real${REAL_KIND}$) .eqv. (p_n_lower < 0.0_real${REAL_KIND}$) ) then
+    else if ( (p_n_middle < 0.0_real${REAL_KIND}$) .eqv. (p_n_a < 0.0_real${REAL_KIND}$) ) then
 
-      x_lower   = x_middle
-      p_n_lower = p_n_middle
+      x_a   = x_middle
+      p_n_a = p_n_middle
 
     else
 
-      x_upper   = x_middle
-      p_n_upper = p_n_middle
+      x_b   = x_middle
+      p_n_b = p_n_middle
 
     end if
 

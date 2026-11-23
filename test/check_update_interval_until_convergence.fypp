@@ -2,7 +2,7 @@
 
 #:include '../src/common.fypp'
 
-#:set PROGRAM_NAME = 'check_update_interval_keeps_bracket'
+#:set PROGRAM_NAME = 'check_update_interval_until_convergence'
 
 #:def GENERATE_SUBROUTINE_NAME(real_kind)
 ${PROGRAM_NAME}$_real${str(real_kind)}$
@@ -13,6 +13,9 @@ program ${PROGRAM_NAME}$
   !! The intervals of
   !! [legendre_polynomial_zero_intervals_fortran](https://github.com/DSCF-1224/legendre_polynomial_zero_intervals_fortran)
   !! are used as the initial intervals.
+  !!
+  !! The step is repeated until the interval converges,
+  !! that is, until the ends are the same or adjacent floating-point numbers.
 
   use, intrinsic :: iso_fortran_env, only: error_unit
   use, intrinsic :: iso_fortran_env, only: int32
@@ -20,7 +23,7 @@ program ${PROGRAM_NAME}$
   use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
   #:endfor
 
-  use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_next_after
 
   use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
 
@@ -52,7 +55,13 @@ program ${PROGRAM_NAME}$
 
     integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
 
-    integer(int32), parameter :: num_steps = ${REAL_KIND}$
+    !! The upper limit of the number of the steps.
+    !! The interval is bisected by each step.
+    !! The interval around the origin, which exists for every odd degree, requires the most steps,
+    !! because its ends have to approach the origin down to the smallest positive number.
+    !! The number of the bisections from the width 1 to the smallest positive number is ( digits - minexponent ).
+    !! The limit is twice the sum of it and 2 as a margin.
+    integer(int32), parameter :: max_steps = 2_int32 * ( digits(1.0_real${REAL_KIND}$) - minexponent(1.0_real${REAL_KIND}$) + 2_int32 )
 
 
     integer(int32) :: degree
@@ -102,8 +111,10 @@ program ${PROGRAM_NAME}$
 
         integer(int32) :: i_step
 
+        logical, dimension(degree) :: flag_converged
 
-        do i_step = 1_int32, num_steps
+
+        do i_step = 1_int32, max_steps
 
           last_x_lower(:) = x_lower(:)
           last_x_upper(:) = x_upper(:)
@@ -145,7 +156,22 @@ program ${PROGRAM_NAME}$
 
           end if
 
+          flag_converged(:) = &!
+            ( abs( x_upper(:) - x_lower(:) ) <= 0.0_real${REAL_KIND}$ ) .or. &!
+            ( abs( ieee_next_after( x_lower(:), x_upper(:) ) - x_upper(:) ) <= 0.0_real${REAL_KIND}$ )
+
+          if ( all( flag_converged(:) ) ) exit
+
         end do
+
+        if ( .not. all( flag_converged(:) ) ) then
+
+          write(error_unit, *) 'n, steps : ', degree, ',', max_steps
+          write(error_unit, *) 'The interval has not converged.'
+
+          error stop
+
+        end if
 
       end block
 

@@ -1,0 +1,221 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:set PROGRAM_NAME = 'demo_' + UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE
+
+#:def GENERATE_SUBROUTINE_NAME(real_kind)
+${PROGRAM_NAME}$_real${str(real_kind)}$
+#:enddef GENERATE_SUBROUTINE_NAME
+
+#:endmute
+program ${PROGRAM_NAME}$
+
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_next_after
+  use, intrinsic :: ieee_arithmetic, only: ieee_signaling_nan
+  use, intrinsic :: ieee_arithmetic, only: ieee_value
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
+
+  use, non_intrinsic :: ${MODULE_NAME_BISECTION_METHOD}$
+
+  use, non_intrinsic :: legendre_polynomial_zero_intervals_fortran
+
+
+
+  implicit none
+
+
+
+  integer(int32), parameter :: index_lower = 1
+  integer(int32), parameter :: index_upper = 2
+
+  integer(int32), parameter :: minval_degree = 1
+
+
+  integer(int32) :: degree
+
+
+  integer(int32), parameter :: &!
+    list_degree(minval_degree:${MAXVAL_DEGREE_INTERFACE}$) = &!
+      [( degree, degree = minval_degree, ${MAXVAL_DEGREE_INTERFACE}$ )]
+
+
+
+  #:for REAL_KIND in REAL_KINDS
+  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  #:endfor
+
+  print *, 'Finish: ${PROGRAM_NAME}$'
+
+
+
+  contains
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$
+
+    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
+
+    integer(int32), parameter :: num_iterations = ${REAL_KIND}$
+
+
+    integer(int32) :: k
+
+    integer :: save_unit
+
+    real(real${REAL_KIND}$), dimension(:,:,:), allocatable :: actual_${P_N_SELECTABLE_INTERFACE}$, x
+
+
+    open( &!
+      newunit = save_unit , &!
+      file    = 'example/${SUBROUTINE_NAME}$.dat' , &!
+      action  = 'write' , &!
+      form    = 'formatted', &!
+      status  = 'unknown' &!
+    )
+
+
+    #:set RANGE = '(num_iterations, index_lower:index_upper, minval_degree:maxval_degree)'
+    allocate( &!
+      x          ${RANGE}$ , &!
+      actual_${P_N_SELECTABLE_INTERFACE}$ ${RANGE}$ , &!
+      source = ieee_value(0.0_real${REAL_KIND}$, ieee_signaling_nan) &!
+    )
+    #:del RANGE
+
+    if ( .not. all( ieee_is_nan( x          (:,:,:) ) ) ) error stop
+    if ( .not. all( ieee_is_nan( actual_${P_N_SELECTABLE_INTERFACE}$ (:,:,:) ) ) ) error stop
+
+
+    do degree = minval_degree, maxval_degree
+
+      #:set RANGE = '( 2_int32 : num_iterations , : , : )'
+      x          ${RANGE}$ = ieee_value(0.0_real${REAL_KIND}$, ieee_signaling_nan)
+      actual_${P_N_SELECTABLE_INTERFACE}$ ${RANGE}$ = ieee_value(0.0_real${REAL_KIND}$, ieee_signaling_nan)
+      #:del RANGE
+
+      call get_zero_interval( &!
+        n       = degree , &!
+        k       = list_degree(minval_degree:degree) , &!
+        x_lower = x( 1, index_lower, minval_degree:degree ) , &!
+        x_upper = x( 1, index_upper, minval_degree:degree )   &!
+      )
+
+      #:set RANGE = '( 1, :, minval_degree:degree )'
+      actual_${P_N_SELECTABLE_INTERFACE}$${RANGE}$ = ${P_N_SELECTABLE_INTERFACE}$( degree, x${RANGE}$ )
+      #:del RANGE
+
+
+      do concurrent (k = minval_degree : degree)
+      block
+
+          integer :: n
+
+
+          do n = 2_int32, num_iterations
+
+            associate( &!
+              #:set LAST_INDEX = '( (n - 1_int32) , : , k )'
+              #:set NEXT_INDEX = '(  n            , : , k )'
+              last_x          => x          ${LAST_INDEX}$ , &!
+              last_actual_${P_N_SELECTABLE_INTERFACE}$ => actual_${P_N_SELECTABLE_INTERFACE}$ ${LAST_INDEX}$ , &!
+              next_x          => x          ${NEXT_INDEX}$ , &!
+              next_actual_${P_N_SELECTABLE_INTERFACE}$ => actual_${P_N_SELECTABLE_INTERFACE}$ ${NEXT_INDEX}$   &!
+              #:del LAST_INDEX
+              #:del NEXT_INDEX
+            )
+
+              next_x          (:) = last_x          (:)
+              next_actual_${P_N_SELECTABLE_INTERFACE}$ (:) = last_actual_${P_N_SELECTABLE_INTERFACE}$ (:)
+
+              associate( &!
+                last_x_a    => last_x          (index_lower) , &!
+                last_x_b    => last_x          (index_upper) , &!
+                next_x_a    => next_x          (index_lower) , &!
+                next_x_b    => next_x          (index_upper) , &!
+                next_p_n_a  => next_actual_${P_N_SELECTABLE_INTERFACE}$ (index_lower) , &!
+                next_p_n_b  => next_actual_${P_N_SELECTABLE_INTERFACE}$ (index_upper)   &!
+              )
+
+                call ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$( &!
+                  degree = degree     , &!
+                  x_a    = next_x_a   , &!
+                  x_b    = next_x_b   , &!
+                  p_n_a  = next_p_n_a , &!
+                  p_n_b  = next_p_n_b   &!
+                )
+
+
+                if ( abs(next_x_b - next_x_a) <= 0.0_real${REAL_KIND}$ ) exit
+
+                associate( next_after_next_x_a => ieee_next_after(next_x_a, next_x_b) )
+                  if ( abs(next_x_b - next_after_next_x_a) <= 0.0_real${REAL_KIND}$ ) exit
+                end associate
+
+              end associate
+
+            end associate
+
+          end do
+
+      end block
+      end do
+
+
+      #:set RANGE = '( n, :, minval_degree:degree )'
+      block
+
+        integer(int32) :: n, n_at_exit
+
+
+        n_at_exit = num_iterations
+
+
+        do n = 1_int32, num_iterations
+        associate( target_x => x${RANGE}$ )
+
+          if ( all( ieee_is_nan( target_x(:,:) ) ) ) then
+            n_at_exit = n; exit
+          end if
+
+          write( unit = save_unit, fmt = * ) target_x(:,:)
+
+        end associate
+        end do
+
+        write( unit = save_unit, fmt = * ) ! BLANK LINE
+
+
+        if (n_at_exit /= num_iterations) then
+          n_at_exit = n_at_exit - 1_int32
+        end if
+
+
+        do n = 1_int32, n_at_exit
+          write( unit = save_unit, fmt = * ) actual_${P_N_SELECTABLE_INTERFACE}$${RANGE}$
+        end do
+
+        if (degree < maxval_degree) write( unit = save_unit, fmt = * ) ! BLANK LINE
+
+      end block
+      #:del RANGE
+
+    end do
+
+
+    close( save_unit )
+
+  end subroutine ${SUBROUTINE_NAME}$
+
+  #:endfor
+  #! REAL_KIND
+end program ${PROGRAM_NAME}$

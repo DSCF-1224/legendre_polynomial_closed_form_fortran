@@ -1,0 +1,87 @@
+#:mute
+
+#:include '../src/common.fypp'
+
+#:set PROGRAM_NAME = 'check_update_interval_at_exact_zero'
+
+#:def GENERATE_SUBROUTINE_NAME(real_kind)
+${PROGRAM_NAME}$_real${str(real_kind)}$
+#:enddef GENERATE_SUBROUTINE_NAME
+
+#:endmute
+program ${PROGRAM_NAME}$
+  !! The midpoint of [-1, 1] is the zero of the polynomial of odd degree.
+  !! Therefore both ends must become the midpoint, and the values at the ends must become zero.
+
+  use, intrinsic :: iso_fortran_env, only: error_unit
+  use, intrinsic :: iso_fortran_env, only: int32
+  #:for REAL_KIND in REAL_KINDS
+  use, intrinsic :: iso_fortran_env, only: real${REAL_KIND}$
+  #:endfor
+
+  use, non_intrinsic :: ${MODULE_NAME}$, only: ${P_N_SELECTABLE_INTERFACE}$
+
+  use, non_intrinsic :: ${MODULE_NAME_BISECTION_METHOD}$, only: ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$
+
+  use, non_intrinsic :: test_utilities, only: is_zero
+
+
+
+  implicit none
+
+
+
+  #:for REAL_KIND in REAL_KINDS
+  call ${GENERATE_SUBROUTINE_NAME(REAL_KIND)}$()
+  #:endfor
+
+  print *, 'OK: ${PROGRAM_NAME}$'
+
+
+
+  contains
+
+
+  #:for REAL_KIND in REAL_KINDS
+
+  #:set SUBROUTINE_NAME = GENERATE_SUBROUTINE_NAME(REAL_KIND)
+  subroutine ${SUBROUTINE_NAME}$()
+
+    integer(int32), parameter :: maxval_degree = ${MAXVAL_DEGREE_REAL(REAL_KIND)}$
+
+
+    integer(int32) :: degree
+
+    real(real${REAL_KIND}$) :: x_a, x_b, p_n_a, p_n_b
+
+
+    do degree = 1_int32, maxval_degree, 2_int32
+
+      x_a   = -1.0_real${REAL_KIND}$
+      x_b   =  1.0_real${REAL_KIND}$
+      p_n_a = ${P_N_SELECTABLE_INTERFACE}$(degree, x_a)
+      p_n_b = ${P_N_SELECTABLE_INTERFACE}$(degree, x_b)
+
+      call ${UPDATE_INTERVAL_BY_BISECTION_METHOD_SELECTABLE_INTERFACE}$(degree, x_a, x_b, p_n_a, p_n_b)
+
+      if ( .not. all( [ is_zero(x_a), is_zero(x_b), is_zero(p_n_a), is_zero(p_n_b) ] ) ) then
+
+        write(error_unit, *) 'n     : ', degree
+        write(error_unit, *) 'x_a   : ', x_a
+        write(error_unit, *) 'x_b   : ', x_b
+        write(error_unit, *) 'p_n_a : ', p_n_a
+        write(error_unit, *) 'p_n_b : ', p_n_b
+        write(error_unit, *) 'These values must be zero.'
+
+        error stop
+
+      end if
+
+    end do
+
+  end subroutine ${SUBROUTINE_NAME}$
+  #:del SUBROUTINE_NAME
+
+  #:endfor
+  #! REAL_KIND
+end program ${PROGRAM_NAME}$

@@ -19,6 +19,9 @@ differentiating that expression term by term (see [Derivatives](#derivatives)).
 One step of Newton's method for the zeros of $P_n(x)$ is also provided, in a separate module
 (see [One step of Newton's method](#one-step-of-newtons-method)).
 
+One step of the bisection method for the zeros of $P_n(x)$ is provided in another separate module
+(see [One step of the bisection method](#one-step-of-the-bisection-method)).
+
 [math-comb]: https://docs.python.org/3/library/math.html#math.comb
 [fypp]: https://github.com/aradi/fypp
 [branch-default]: https://github.com/DSCF-1224/legendre_polynomial_closed_form_fortran/tree/default
@@ -159,6 +162,56 @@ The tests check that the result is identical to `x - p_NN(x) / p_NN_prime(x)`, e
 the `p_NN` and `p_NN_prime` of the degree `NN`, at random points for every supported degree and
 real kind. See [Example](#example) for how the iteration behaves.
 
+## One step of the bisection method
+
+`update_interval_by_bisection_method(degree, x_a, x_b, p_n_a, p_n_b)` performs
+one step of the bisection method for a zero of $P_n(x)$ with $n$ = `degree`. It is provided by
+its own module, `legendre_polynomial_closed_form_bisection_method_fortran`:
+
+```fortran
+use legendre_polynomial_closed_form_fortran, only: p_n
+use legendre_polynomial_closed_form_bisection_method_fortran, only: update_interval_by_bisection_method
+
+integer :: degree, i
+real(real64) :: x_a, x_b, p_n_a, p_n_b
+
+degree = 3
+x_a = 0.5_real64
+x_b = 1.0_real64
+p_n_a = p_n(degree, x_a)
+p_n_b = p_n(degree, x_b)
+
+do i = 1, 10
+  call update_interval_by_bisection_method(degree, x_a, x_b, p_n_a, p_n_b)
+end do
+```
+
+It is an `elemental` subroutine of `real32`, `real64` and (in the `with_real128` branch) `real128`
+arguments; `complex` arguments are not accepted. `degree` is `intent(in)`. The other four
+arguments are `intent(inout)`: the two ends `x_a` and `x_b` of the interval and the values of
+$P_n(x)$ at them. The order of `x_a` and `x_b` is not used. The midpoint `(x_a + x_b) * 0.5` is
+evaluated, so $P_n(x)$ is evaluated once per step. If its sign is the same as that of `p_n_a`,
+`x_a` becomes the midpoint; otherwise `x_b` becomes the midpoint. If $P_n(x)$ is exactly zero
+there, both ends become the midpoint.
+
+The supported degrees are 1 up to the maximum degree of `p_n` for the real kind (see
+[Supported degrees](#supported-degrees)). Otherwise, the four arguments become signaling NaNs.
+
+Only a single step is provided. The number of steps and the stopping criteria are left to the
+caller. It is not checked that the signs of `p_n_a` and `p_n_b` are different, nor that
+they are the values of $P_n(x)$ at `x_a` and `x_b`.
+
+The tests check that the result is identical to the one calculated with `p_n`, at random
+intervals for every supported degree and real kind. They also check, for every
+supported degree and real kind, that repeated steps starting from the intervals returned by
+`get_zero_interval` of [legendre_polynomial_zero_intervals_fortran][zero-intervals] keep the
+interval inside the previous one, keep the stored values equal to $P_n(x)$ at the ends, and keep
+the signs of the values at the ends different (or both ends at an exact zero), until the ends
+become the same or adjacent floating-point numbers. The number of the steps in the tests is
+limited, and the tests fail if the ends have not become so within the limit. For every odd
+degree and real kind, they also check that one step starting from the interval [-1, 1] makes
+both ends, and the values there, exactly zero.
+
 ## Installation
 
 Add this as a dependency in your `fpm.toml`, pointing at either the `default` branch (`real32`
@@ -206,6 +259,20 @@ An iteration stops when the iterate no longer changes or `p_n` becomes exactly z
 continues until the number of iterations reaches the number of bits of the real kind, which is
 only an upper bound, not a convergence criterion. Some iterations never satisfy either condition,
 because of rounding errors.
+
+`example/demo_update_interval_by_bisection_method.f90` applies
+`update_interval_by_bisection_method` repeatedly, starting from each interval returned by
+`get_zero_interval` of [legendre_polynomial_zero_intervals_fortran][zero-intervals], for every
+supported degree and real kind. It writes the ends of the interval and the values of `p_n` at
+them to `.dat` files, and `example/demo_update_interval_by_bisection_method.gpl` plots them as
+SVGs with [gnuplot][gnuplot], one curve per end of each interval: the ends, and the absolute
+values of `p_n` on a logarithmic axis.
+
+An iteration stops when the ends become the same or adjacent floating-point numbers. Otherwise
+it continues until the number of the intervals, counting the initial one, reaches the number of
+bits of the real kind, which is only an upper bound, not a convergence criterion. The interval
+around the origin, which exists for every odd degree, does not satisfy the condition within
+this bound.
 
 That library is listed in `fpm.toml` under `[dev-dependencies]` for these examples, and is not
 exported with this library: it is removed from the [`default`][branch-default]/

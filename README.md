@@ -260,6 +260,20 @@ continues until the number of iterations reaches the number of bits of the real 
 only an upper bound, not a convergence criterion. Some iterations never satisfy either condition,
 because of rounding errors.
 
+`example/demo_update_interval_by_bisection_method.f90` applies
+`update_interval_by_bisection_method` repeatedly, starting from each interval returned by
+`get_zero_interval` of [legendre_polynomial_zero_intervals_fortran][zero-intervals], for every
+supported degree and real kind. It writes the ends of the interval and the values of `p_n` at
+them to `.dat` files, and `example/demo_update_interval_by_bisection_method.gpl` plots them as
+SVGs with [gnuplot][gnuplot], one curve per end of each interval: the ends, and the absolute
+values of `p_n` on a logarithmic axis.
+
+An iteration stops when the ends become the same or adjacent floating-point numbers. Otherwise
+it continues until the number of the intervals, counting the initial one, reaches the number of
+bits of the real kind, which is only an upper bound, not a convergence criterion. The interval
+around the origin, which exists for every odd degree, does not satisfy the condition within
+this bound.
+
 That library is listed in `fpm.toml` under `[dev-dependencies]` for these examples, and is not
 exported with this library: it is removed from the [`default`][branch-default]/
 [`with_real128`][branch-with-real128] branches. `fpm.toml` pins its `default` variant by tag;
